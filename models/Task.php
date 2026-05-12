@@ -111,7 +111,7 @@ class Task {
     }
 
     public function getByAssignee($user_id) {
-        // BA thấy: task được gán cho mình + task "Chờ tiếp nhận" chưa có ai nhận
+        // BA chỉ thấy task được Lead phân công cho mình
         $query = "SELECT " . $this->selectFields() . "
                   FROM " . $this->table_name . " t
                   LEFT JOIN users u ON t.assignee_id = u.id
@@ -123,10 +123,7 @@ class Task {
                   LEFT JOIN system_nodes ln ON t.logic_node_id = ln.id
                   LEFT JOIN system_nodes hn ON t.hidden_node_id = hn.id
                   WHERE t.assignee_id = :uid
-                     OR (t.assignee_id IS NULL AND t.status = 'Chờ tiếp nhận')
-                  ORDER BY
-                    CASE WHEN t.assignee_id IS NULL THEN 0 ELSE 1 END,
-                    t.created_at DESC";
+                  ORDER BY t.created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->bindValue(':uid', $user_id, PDO::PARAM_INT);
         $stmt->execute();
