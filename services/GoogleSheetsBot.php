@@ -14,10 +14,15 @@ class GoogleSheetsBot {
     const SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
 
     public function __construct($credentialsPath, $spreadsheetId) {
-        if(!file_exists($credentialsPath)) {
-            throw new Exception("Không tìm thấy file credentials: $credentialsPath");
+        // Ưu tiên đọc từ biến môi trường GOOGLE_CREDENTIALS_JSON (Railway)
+        $envJson = getenv('GOOGLE_CREDENTIALS_JSON');
+        if ($envJson) {
+            $json = $envJson;
+        } elseif (file_exists($credentialsPath)) {
+            $json = file_get_contents($credentialsPath);
+        } else {
+            throw new Exception("Không tìm thấy credentials: $credentialsPath");
         }
-        $json = file_get_contents($credentialsPath);
         $this->credentials = json_decode($json, true);
         if(!$this->credentials || empty($this->credentials['private_key']) || empty($this->credentials['client_email'])) {
             throw new Exception("File credentials không hợp lệ (thiếu private_key/client_email)");

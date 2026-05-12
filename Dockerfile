@@ -1,15 +1,15 @@
 FROM php:8.3-cli
 
-# Install PDO MySQL + other extensions
-RUN docker-php-ext-install pdo pdo_mysql
+# Install system dependencies + PHP extensions
+RUN apt-get update && apt-get install -y libcurl4-openssl-dev libssl-dev && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install pdo pdo_mysql curl
 
-# Set working directory
+# Enable openssl (already built-in with php:8.3-cli)
+RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
+
 WORKDIR /app
-
-# Copy project files
 COPY . /app
 
-# Create uploads + session directories
 RUN mkdir -p /app/uploads /tmp/sessions && chmod 777 /app/uploads /tmp/sessions
 
 EXPOSE 8080
