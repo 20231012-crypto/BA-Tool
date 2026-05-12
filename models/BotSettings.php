@@ -28,7 +28,9 @@ class BotSettings {
     public function save($data) {
         $allowed = array_intersect_key($data, array_flip([
             'sheet_url','sheet_id','bot_email','credentials_path',
-            'schedule_hour','schedule_minute','enabled'
+            'schedule_hour','schedule_minute','enabled',
+            'dev_sheet_url','dev_sheet_id',
+            'poller_enabled','poller_interval'
         ]));
         if(empty($allowed)) return ['success' => false, 'message' => 'Không có dữ liệu'];
 

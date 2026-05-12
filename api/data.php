@@ -879,7 +879,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $bs = new BotSettings($db);
 
         if($action === 'save_bot_settings') {
-            $sheetUrl = trim($_POST['sheet_url'] ?? '');
+            $sheetUrl    = trim($_POST['sheet_url'] ?? '');
+            $devSheetUrl = trim($_POST['dev_sheet_url'] ?? '');
             $data = [
                 'sheet_url'       => $sheetUrl,
                 'sheet_id'        => BotSettings::extractSheetId($sheetUrl),
@@ -887,6 +888,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'schedule_hour'   => max(0, min(23, intval($_POST['schedule_hour'] ?? 23))),
                 'schedule_minute' => max(0, min(59, intval($_POST['schedule_minute'] ?? 0))),
                 'enabled'         => !empty($_POST['enabled']) ? 1 : 0,
+                'dev_sheet_url'   => $devSheetUrl,
+                'dev_sheet_id'    => BotSettings::extractSheetId($devSheetUrl),
+                'poller_enabled'  => !empty($_POST['poller_enabled']) ? 1 : 0,
+                'poller_interval' => max(10, min(300, intval($_POST['poller_interval'] ?? 15))),
             ];
             echo json_encode($bs->save($data));
             exit;

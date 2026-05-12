@@ -32,7 +32,6 @@ chdir(__DIR__ . '/..');
 require_once 'config/db.php';
 require_once 'services/DevSheetService.php';
 
-const POLL_INTERVAL_SEC = 15;
 const LOG_FILE = __DIR__ . '/poll_dev_sheet.log';
 
 function poll_log($msg) {
@@ -41,26 +40,52 @@ function poll_log($msg) {
     @file_put_contents(LOG_FILE, $line, FILE_APPEND);
 }
 
-poll_log("=== Poller started · interval " . POLL_INTERVAL_SEC . "s ===");
+function getPollerConfig($db) {
+    try {
+        require_once __DIR__ . '/../models/BotSettings.php';
+        $bs = new BotSettings($db);
+        $cfg = $bs->get();
+        return [
+            'enabled'  => (int)($cfg['poller_enabled'] ?? 1),
+            'interval' => max(10, (int)($cfg['poller_interval'] ?? 15)),
+        ];
+    } catch(Throwable $e) {
+        return ['enabled' => 1, 'interval' => 15];
+    }
+}
+
+poll_log("=== Poller started ===");
 
 while(true) {
     try {
         $db  = (new Database())->getConnection();
+
+        // Reload config moi vong de Lead co the thay doi realtime
+        $pcfg = getPollerConfig($db);
+        $interval = $pcfg['interval'];
+
+        if(!$pcfg['enabled']) {
+            poll_log("Poller disabled — sleeping {$interval}s");
+            sleep($interval);
+            continue;
+        }
+
         $dss = new DevSheetService($db);
         $stats = $dss->pollChanges();
         poll_log(sprintf(
-            "scanned=%d updated=%d skipped=%d errors=%d",
+            "scanned=%d updated=%d skipped=%d errors=%d (interval=%ds)",
             $stats['scanned'] ?? 0,
             $stats['updated'] ?? 0,
             $stats['skipped'] ?? 0,
-            count($stats['errors'] ?? [])
+            count($stats['errors'] ?? []),
+            $interval
         ));
         if(!empty($stats['errors'])) {
             foreach($stats['errors'] as $e) poll_log("  ! $e");
         }
     } catch(Throwable $e) {
         poll_log("FATAL: " . $e->getMessage());
-        // Tiếp tục loop — đừng để 1 lỗi giết poller
+        $interval = 15;
     }
-    sleep(POLL_INTERVAL_SEC);
+    sleep($interval);
 }

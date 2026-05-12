@@ -413,83 +413,94 @@
             <section id="section-botsync" class="page-section" style="display:none;">
                 <div class="card">
                     <div class="section-title">
-                        <span>🤖 Bot đồng bộ Google Sheet</span>
+                        <span>Bot dong bo Google Sheet</span>
                         <div style="display:flex;gap:8px;">
-                            <button class="btn btn-outline btn-sm" onclick="bsTriggerImportNow()" title="Đọc tab 'Tổng quan' và đẩy vào DB (idempotent theo Mã YC)">⬇ Import từ Sheet</button>
-                            <button class="btn btn-primary btn-sm" onclick="bsTriggerSyncNow()">⚡ Chạy đồng bộ ngay</button>
+                            <button class="btn btn-outline btn-sm" onclick="bsTriggerImportNow()" title="Doc tab 'Tong quan' va day vao DB">Import tu Sheet</button>
+                            <button class="btn btn-primary btn-sm" onclick="bsTriggerSyncNow()">Chay dong bo ngay</button>
                         </div>
                     </div>
                     <p style="color:var(--text-muted);font-size:0.86rem;margin:6px 0 16px;">
-                        <strong>Đẩy lên (Sync):</strong> tự động đưa danh sách task của từng nhân viên sang Google Sheet hàng ngày (mỗi user 1 tab + 1 tab "Tổng quan").<br>
-                        <strong>Kéo về (Import):</strong> đọc tab "Tổng quan" trên Sheet và đồng bộ vào DB. Idempotent theo Mã YC — tasks đã có sẽ được update, tasks mới sẽ được insert. BA chưa có sẽ được tạo tự động (pass mặc định <code>kinkin123</code>).
+                        <strong>Day len (Sync):</strong> tu dong dua danh sach task cua tung nhan vien sang Google Sheet hang ngay.<br>
+                        <strong>Keo ve (Import):</strong> doc tab "Tong quan" tren Sheet va dong bo vao DB. Idempotent theo Ma YC.<br>
+                        <strong>Dev Poller:</strong> tu dong doc trang thai tu Dev Sheet moi <span id="bs-poller-interval-display">15</span> giay va cap nhat vao he thong.
                     </p>
 
                     <!-- Status box -->
                     <div id="bs-status" class="bs-status">
-                        <div style="text-align:center;color:var(--text-muted);">Đang tải...</div>
+                        <div style="text-align:center;color:var(--text-muted);">Dang tai...</div>
                     </div>
 
-                    <!-- Cấu hình -->
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;padding:16px;background:#fafafa;border:1px solid var(--border-color);">
+                    <!-- ======== BA SHEET CONFIG ======== -->
+                    <h4 style="margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--primary-color);color:var(--primary-color);">BA Sheet (Tong quan + per-user tabs)</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px;background:#fafafa;border:1px solid var(--border-color);">
                         <div class="form-group" style="grid-column: span 2; margin:0;">
-                            <label>Link Google Sheet đích <span style="color:var(--danger-color);">*</span></label>
+                            <label>Link Google Sheet BA <span style="color:var(--danger-color);">*</span></label>
                             <input type="text" id="bs-sheet-url" class="form-control" placeholder="https://docs.google.com/spreadsheets/d/...">
-                            <small style="color:var(--text-muted);">Sheet ID sẽ tự trích từ URL. Bot phải được share quyền Editor vào sheet này.</small>
-                        </div>
-                        <div class="form-group" style="grid-column: span 2; margin:0;">
-                            <label>Email của Bot (Service Account)</label>
-                            <input type="text" id="bs-bot-email" class="form-control" placeholder="bot@project.iam.gserviceaccount.com" readonly style="background:#f0f0f0;">
-                            <small style="color:var(--text-muted);">Tự động lấy từ file credentials. Bạn cần share Google Sheet cho email này.</small>
+                            <small style="color:var(--text-muted);">Sheet ID se tu trich tu URL. Bot phai duoc share quyen Editor vao sheet nay.</small>
                         </div>
                         <div class="form-group" style="margin:0;">
-                            <label>Giờ chạy auto-sync (24h format)</label>
+                            <label>Gio chay auto-sync (24h)</label>
                             <div style="display:flex;gap:6px;align-items:center;">
                                 <input type="number" id="bs-hour" class="form-control" min="0" max="23" value="23" style="width:80px;text-align:center;">
-                                <span>giờ</span>
+                                <span>gio</span>
                                 <input type="number" id="bs-minute" class="form-control" min="0" max="59" value="0" style="width:80px;text-align:center;">
-                                <span>phút</span>
+                                <span>phut</span>
                             </div>
-                            <small style="color:var(--text-muted);">Cần setup Windows Task Scheduler (xem hướng dẫn dưới).</small>
                         </div>
                         <div class="form-group" style="margin:0;">
                             <label>&nbsp;</label>
                             <label style="display:flex;align-items:center;gap:8px;font-weight:500;padding:8px 0;">
-                                <input type="checkbox" id="bs-enabled" style="width:20px;height:20px;"> Bật bot đồng bộ
+                                <input type="checkbox" id="bs-enabled" style="width:20px;height:20px;"> Bat bot dong bo BA Sheet
                             </label>
                         </div>
-                        <div style="grid-column: span 2; text-align:right; margin-top:6px;">
-                            <button class="btn btn-primary btn-sm" onclick="bsSaveSettings()">💾 Lưu cấu hình</button>
+                    </div>
+
+                    <!-- ======== DEV SHEET CONFIG ======== -->
+                    <h4 style="margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #198754;color:#198754;">Dev Sheet (Theo doi trang thai Dev)</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px;background:#f0fff4;border:1px solid #a3cfbb;">
+                        <div class="form-group" style="grid-column: span 2; margin:0;">
+                            <label>Link Google Sheet Dev <span style="color:var(--danger-color);">*</span></label>
+                            <input type="text" id="bs-dev-sheet-url" class="form-control" placeholder="https://docs.google.com/spreadsheets/d/...">
+                            <small style="color:var(--text-muted);">Sheet rieng cho Dev workflow. Bot se tu tao tab theo tuan.</small>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>Tan suat poll Dev Sheet</label>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <input type="number" id="bs-poller-interval" class="form-control" min="10" max="300" value="15" style="width:100px;text-align:center;">
+                                <span>giay</span>
+                                <small style="color:var(--text-muted);margin-left:8px;">(10-300 giay)</small>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label>&nbsp;</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-weight:500;padding:8px 0;">
+                                <input type="checkbox" id="bs-poller-enabled" style="width:20px;height:20px;"> Bat Dev Sheet Poller
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Upload credentials -->
-                    <div style="margin-top:16px;padding:16px;background:#fffbf0;border:1px solid #ffc107;">
-                        <div style="font-weight:700;color:#856404;margin-bottom:6px;">📤 Upload file credentials JSON</div>
-                        <div style="font-size:0.84rem;color:var(--text-secondary);margin-bottom:10px;">
-                            Tải lên file JSON service account của Google Cloud. Hệ thống sẽ tự đọc <code>client_email</code> để gán vào ô email Bot.
+                    <!-- ======== BOT / CREDENTIALS CONFIG ======== -->
+                    <h4 style="margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #6f42c1;color:#6f42c1;">Google Service Account (Bot)</h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px;background:#f8f5ff;border:1px solid #d4c5f9;">
+                        <div class="form-group" style="grid-column: span 2; margin:0;">
+                            <label>Email cua Bot (Service Account)</label>
+                            <input type="text" id="bs-bot-email" class="form-control" placeholder="bot@project.iam.gserviceaccount.com" readonly style="background:#f0f0f0;">
+                            <small style="color:var(--text-muted);">Tu dong lay tu file credentials. Ban can share ca 2 Google Sheet cho email nay voi quyen Editor.</small>
                         </div>
-                        <div style="display:flex;gap:10px;align-items:center;">
-                            <input type="file" id="bs-cred-file" class="form-control" accept=".json" style="flex:1;">
-                            <button class="btn btn-outline btn-sm" onclick="bsUploadCredentials()">↑ Upload &amp; áp dụng</button>
+                        <div class="form-group" style="grid-column: span 2; margin:0;">
+                            <label>Thay the bot (Upload file credentials JSON moi)</label>
+                            <div style="display:flex;gap:10px;align-items:center;">
+                                <input type="file" id="bs-cred-file" class="form-control" accept=".json" style="flex:1;">
+                                <button class="btn btn-outline btn-sm" onclick="bsUploadCredentials()">Upload &amp; ap dung</button>
+                            </div>
+                            <div id="bs-cred-info" style="margin-top:8px;font-size:0.85rem;"></div>
                         </div>
-                        <div id="bs-cred-info" style="margin-top:8px;font-size:0.85rem;"></div>
                     </div>
 
-                    <!-- Hướng dẫn cài Task Scheduler -->
-                    <details style="margin-top:18px;padding:14px;background:#f0f4ff;border:1px solid #cfe2ff;">
-                        <summary style="cursor:pointer;font-weight:600;color:#084298;">📖 Hướng dẫn cài đặt auto-sync trên Windows Task Scheduler</summary>
-                        <ol style="margin:10px 0 0 18px;font-size:0.86rem;line-height:1.7;">
-                            <li>Mở <strong>Task Scheduler</strong> (Win+R → <code>taskschd.msc</code>)</li>
-                            <li>Bấm <strong>Create Basic Task</strong> ở panel phải</li>
-                            <li>Đặt tên: <code>BA Tool - Sync Sheet</code></li>
-                            <li>Trigger: <strong>Daily</strong>, đặt giờ <strong>23:00</strong> (hoặc giờ bạn cấu hình bên trên)</li>
-                            <li>Action: <strong>Start a program</strong></li>
-                            <li>Program/script: <code>C:\xampp\php\php.exe</code></li>
-                            <li>Add arguments: <code>C:\xampp\htdocs\BA.Tool\cron\sync_to_sheet.php</code></li>
-                            <li>Start in: <code>C:\xampp\htdocs\BA.Tool</code></li>
-                            <li>Bấm <strong>Finish</strong>. Test bằng cách phải chuột lên task → Run.</li>
-                        </ol>
-                    </details>
+                    <!-- Save all -->
+                    <div style="text-align:right; margin-top:16px;">
+                        <button class="btn btn-primary" onclick="bsSaveSettings()" style="padding:10px 30px;">Luu tat ca cau hinh</button>
+                    </div>
                 </div>
             </section>
 
