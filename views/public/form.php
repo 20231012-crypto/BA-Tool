@@ -11,7 +11,7 @@ $_fields = $_fc->getAllFields(true);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($_settings['title'] ?? 'Gửi Yêu Cầu'); ?> - Kin Kin BA Tool</title>
-    <link rel="stylesheet" href="/BA.Tool/assets/css/style.css?v=13">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>/assets/css/style.css?v=13">
 </head>
 <body class="standalone-shell">
     <div class="public-form-wrapper">

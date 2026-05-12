@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BA Dashboard - Kin Kin BA Tool</title>
-    <link rel="stylesheet" href="/BA.Tool/assets/css/style.css?v=20">
+    <link rel="stylesheet" href="<?php echo BASE_PATH; ?>/assets/css/style.css?v=20">
 </head>
 <body>
 <div class="app-shell">
@@ -100,7 +100,7 @@
                     </div>
                     <div class="form-link-bar">
                         <span class="form-link-label">Link gửi yêu cầu cho bộ phận:</span>
-                        <code id="form-link-url"><?php echo 'http://'.$_SERVER['HTTP_HOST'].'/BA.Tool/?page=public_form'; ?></code>
+                        <code id="form-link-url"><?php echo (isset($_SERVER['HTTPS'])&&$_SERVER['HTTPS']==='on'?'https':'http').'://'.$_SERVER['HTTP_HOST'].BASE_PATH.'/?page=public_form'; ?></code>
                         <button class="btn btn-outline btn-sm" onclick="copyFormLink()">📋 Sao chép link</button>
                         <span class="copy-hint" id="copy-hint">✓ Đã sao chép!</span>
                     </div>
@@ -174,7 +174,7 @@
 </div>
 
 <script>
-const API = '/BA.Tool/api/data.php';
+const API = '<?php echo BASE_PATH; ?>/api/data.php';
 let currentTaskId = null;
 
 function esc(s) { if(s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -765,10 +765,10 @@ setInterval(() => {
     loadNotifBell();
 }, 15000);
 </script>
-<script src="/BA.Tool/assets/js/task-detail.js?v=1"></script>
-<script src="/BA.Tool/assets/js/start-coding-modal.js?v=4"></script>
-<script src="/BA.Tool/assets/js/claim-modal.js?v=1"></script>
-<script src="/BA.Tool/assets/js/system-tree.js?v=3"></script>
+<script src="<?php echo BASE_PATH; ?>/assets/js/task-detail.js?v=1"></script>
+<script src="<?php echo BASE_PATH; ?>/assets/js/start-coding-modal.js?v=4"></script>
+<script src="<?php echo BASE_PATH; ?>/assets/js/claim-modal.js?v=1"></script>
+<script src="<?php echo BASE_PATH; ?>/assets/js/system-tree.js?v=3"></script>
 <script>const SYS_IS_LEAD = <?php echo $_SESSION['role']==='lead' ? 'true' : 'false'; ?>;</script>
 </body>
 </html>

@@ -20,3 +20,5 @@ logs/*.log
 # OS
 .DS_Store
 Thumbs.db
+import_railway.php
+railway_full_import.sql
