@@ -1,0 +1,22 @@
+# Credentials & secrets
+config/google-credentials.json
+config/*.key
+config/*.pem
+.env
+*.env
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+logs/*.log
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

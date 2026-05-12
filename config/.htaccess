@@ -1,0 +1,5 @@
+# Block all direct web access to credentials and config files
+<FilesMatch "\.(json|php|env|key|pem)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes
