@@ -1,5 +1,5 @@
 # Credentials & secrets
-config/google-credentials.json
+# config/google-credentials.json
 config/*.key
 config/*.pem
 .env

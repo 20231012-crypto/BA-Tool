@@ -110,7 +110,7 @@ class DevSheetService {
         if(!$sheetId) throw new Exception('Chưa cấu hình dev_sheet_id trong bot_settings');
         $credPath = $cfg['credentials_path'] ?: 'config/google-credentials.json';
         $absCred  = __DIR__ . '/../' . $credPath;
-        if(!file_exists($absCred)) throw new Exception("Không tìm thấy credentials: $credPath");
+        if(!getenv('GOOGLE_CREDENTIALS_JSON') && !file_exists($absCred)) throw new Exception("Không tìm thấy credentials: $credPath");
         $this->bot = new GoogleSheetsBot($absCred, $sheetId);
         return $this->bot;
     }

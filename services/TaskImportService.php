@@ -95,7 +95,7 @@ class TaskImportService {
         }
         $credPath = $cfg['credentials_path'] ?: 'config/google-credentials.json';
         $absCred  = __DIR__ . '/../' . $credPath;
-        if(!file_exists($absCred)) {
+        if(!getenv('GOOGLE_CREDENTIALS_JSON') && !file_exists($absCred)) {
             return ['success' => false, 'message' => "Không tìm thấy credentials: $credPath"];
         }
 

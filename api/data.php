@@ -232,10 +232,11 @@ if($_SERVER['REQUEST_METHOD'] === 'GET') {
         $bs = new BotSettings($db);
         $cfg = $bs->get();
         // Đính kèm thông tin file credentials có tồn tại không
+        $envCred = getenv('GOOGLE_CREDENTIALS_JSON');
         $credPath = __DIR__ . '/../' . ($cfg['credentials_path'] ?: 'config/google-credentials.json');
-        $cfg['credentials_exists'] = file_exists($credPath) ? 1 : 0;
+        $cfg['credentials_exists'] = ($envCred || file_exists($credPath)) ? 1 : 0;
         if($cfg['credentials_exists']) {
-            $info = json_decode(@file_get_contents($credPath), true);
+            $info = $envCred ? json_decode($envCred, true) : json_decode(@file_get_contents($credPath), true);
             $cfg['credentials_email'] = $info['client_email'] ?? null;
             $cfg['credentials_project'] = $info['project_id'] ?? null;
         }
