@@ -208,8 +208,11 @@ function statusBadge(s) {
     const map = {
         'Chờ tiếp nhận':         'badge-new',
         'Todo - chờ xác nhận với Sếp': 'badge-pending',
+        'Chờ duyệt':                   'badge-pending',
         'Dion - đang xử lý':           'badge-progress',
         'Dion - Chờ nghiệm thu':       'badge-medium',
+        'Chờ nghiệm thu':              'badge-medium',
+        'Hoàn thành':                   'badge-done',
         'Kinkin nghiệm thu':           'badge-done',
         'Huỷ':                          'badge-high'
     };
@@ -256,15 +259,20 @@ function delayCell(t) {
 const WORKFLOW = {
     'Chờ tiếp nhận':         { next: 'Todo - chờ xác nhận với Sếp', label: 'Nhận YC' },
     'Todo - chờ xác nhận với Sếp': { next: 'Dion - đang xử lý',     label: 'Bắt đầu code' },
+    'Chờ duyệt':                   { next: 'Dion - đang xử lý',     label: 'Bắt đầu xử lý' },
     'Dion - đang xử lý':           { next: 'Dion - Chờ nghiệm thu', label: 'Đã xong' },
     'Dion - Chờ nghiệm thu':       { next: 'Kinkin nghiệm thu',     label: 'Nghiệm thu' },
+    'Chờ nghiệm thu':              { next: 'Kinkin nghiệm thu',     label: 'Nghiệm thu' },
+    'Hoàn thành':                   { next: null,                     label: 'Đã hoàn tất' },
     'Kinkin nghiệm thu':           { next: null,                     label: 'Đã hoàn tất' },
     'Huỷ':                          { next: null,                     label: 'Đã huỷ' }
 };
 const WORKFLOW_BACK = {
     'Todo - chờ xác nhận với Sếp': 'Chờ tiếp nhận',
+    'Chờ duyệt':                   'Chờ tiếp nhận',
     'Dion - đang xử lý':           'Todo - chờ xác nhận với Sếp',
     'Dion - Chờ nghiệm thu':       'Dion - đang xử lý',
+    'Chờ nghiệm thu':              'Dion - đang xử lý',
     'Kinkin nghiệm thu':           'Dion - Chờ nghiệm thu',
 };
 
