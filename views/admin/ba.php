@@ -54,6 +54,7 @@
                         <button class="btn btn-outline btn-sm qf-btn" data-qf="all" onclick="qfApply('all')" style="font-weight:600;">T&#7845;t c&#7843;</button>
                         <button class="btn btn-outline btn-sm qf-btn" data-qf="overdue" onclick="qfApply('overdue')" style="border-color:#dc3545;color:#dc3545;">Qu&#225; h&#7841;n</button>
                         <button class="btn btn-outline btn-sm qf-btn" data-qf="need_receive" onclick="qfApply('need_receive')" style="border-color:#ffc107;color:#856404;">C&#7847;n ti&#7871;p nh&#7853;n</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="assign_dev" onclick="qfApply('assign_dev')" style="border-color:#0dcaf0;color:#0dcaf0;">Ph&#226;n c&#244;ng Dev</button>
                         <button class="btn btn-outline btn-sm qf-btn" data-qf="coding" onclick="qfApply('coding')" style="border-color:#0d6efd;color:#0d6efd;">&#272;ang code</button>
                         <button class="btn btn-outline btn-sm qf-btn" data-qf="testing" onclick="qfApply('testing')" style="border-color:#6f42c1;color:#6f42c1;">Test</button>
                         <button class="btn btn-outline btn-sm qf-btn" data-qf="done" onclick="qfApply('done')" style="border-color:#198754;color:#198754;">Ho&#224;n th&#224;nh</button>
@@ -472,6 +473,9 @@ function qfMatchTask(t) {
                 && !['Kinkin nghiệm thu','Hoàn thành','Huỷ'].includes(t.status);
         case 'need_receive':
             return t.status === 'Chờ tiếp nhận' || t.status === 'Todo - chờ xác nhận với Sếp';
+        case 'assign_dev':
+            return t.status === 'Todo - chờ xác nhận với Sếp'
+                || (t.status === 'Dion - đang xử lý' && !t.dev_id);
         case 'coding':
             return t.status === 'Dion - đang xử lý'
                 || (t.dev_status && ['Dev đang làm','Chờ dev nhận'].includes(t.dev_status));
