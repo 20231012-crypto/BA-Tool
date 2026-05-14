@@ -16,7 +16,10 @@ function akLoad() {
         tbody.innerHTML = keys.map(k => `
             <tr>
                 <td><strong>${esc(k.name)}</strong><br><small style="color:var(--text-muted);">${esc(k.creator_name || '')}</small></td>
-                <td><code style="font-size:0.75rem;word-break:break-all;">${esc(k.token.substring(0, 12))}...${esc(k.token.substring(k.token.length - 8))}</code></td>
+                <td>
+                    <code style="font-size:0.72rem;word-break:break-all;display:block;max-width:220px;background:#f5f5f5;padding:4px 6px;border-radius:3px;">${esc(k.token)}</code>
+                    <button class="btn btn-outline btn-sm" style="margin-top:4px;font-size:0.7rem;" onclick="navigator.clipboard.writeText('${esc(k.token)}');this.textContent='Da copy!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+                </td>
                 <td><span class="badge badge-pending">${esc(k.methods)}</span></td>
                 <td>${k.is_active == 1
                     ? '<span class="badge badge-done">Active</span>'
