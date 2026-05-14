@@ -144,7 +144,7 @@
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
                         <input type="text" id="oo-search" class="form-control" placeholder="T&#236;m ki&#7871;m c&#244;ng vi&#7879;c..." style="flex:1;min-width:200px;" onkeydown="if(event.key==='Enter')ooLoad()">
-                        <input type="text" id="oo-assign" class="form-control" placeholder="M&#227; NV (VD: KK0230)" style="width:140px;">
+                        <select id="oo-assign" class="form-control" style="width:200px;"><option value="">-- Ng&#432;&#7901;i th&#7921;c hi&#7879;n --</option></select>
                         <input type="text" id="oo-owner" class="form-control" placeholder="Ng&#432;&#7901;i giao" style="width:140px;">
                         <button class="btn btn-primary btn-sm" onclick="ooLoad()">T&#236;m</button>
                         <button class="btn btn-outline btn-sm" onclick="ooReset()">Reset</button>

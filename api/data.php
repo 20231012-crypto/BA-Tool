@@ -270,6 +270,14 @@ if($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
+    // ─── Users with employee_code (for 1Office filter) ────────
+    if($action === 'get_users_with_code') {
+        if(!isset($_SESSION['user_id'])) { echo json_encode([]); exit; }
+        $rows = $db->query("SELECT id, full_name, nickname, employee_code, role FROM users WHERE employee_code IS NOT NULL AND employee_code != '' ORDER BY full_name")->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($rows, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     // ─── 1Office tasks (proxy) ──────────────────────────────────
     if($action === 'get_1o_tasks') {
         if(!isset($_SESSION['user_id'])) { echo json_encode(['error'=>true,'message'=>'Unauthorized']); exit; }
@@ -848,7 +856,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $userId   = intval($_POST['user_id']);
         $newRole  = $_POST['role'] ?? '';
         $nickname = isset($_POST['nickname']) ? trim($_POST['nickname']) : null;
-        $ok = $user->updateUser($userId, $_POST['full_name'], $newRole, $_POST['password'] ?? '', $nickname);
+        $empCode  = isset($_POST['employee_code']) ? trim($_POST['employee_code']) : null;
+        $ok = $user->updateUser($userId, $_POST['full_name'], $newRole, $_POST['password'] ?? '', $nickname, $empCode);
         echo json_encode(['success' => $ok]);
         exit;
     }

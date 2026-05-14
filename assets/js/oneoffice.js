@@ -5,9 +5,26 @@
 let _ooPage = 1;
 let _ooLimit = 50;
 let _ooActiveQF = '';
+let _ooUsersLoaded = false;
 const OO_TASK_URL = 'https://kinkin.1office.vn/work-normal-normal/view?ID=';
 
+function ooLoadUsers() {
+    if (_ooUsersLoaded) return;
+    fetch(API + '?action=get_users_with_code').then(r => r.json()).then(users => {
+        const sel = document.getElementById('oo-assign');
+        if (!sel) return;
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.employee_code;
+            opt.textContent = u.full_name + ' (' + u.employee_code + ')';
+            sel.appendChild(opt);
+        });
+        _ooUsersLoaded = true;
+    });
+}
+
 function ooLoad(page) {
+    ooLoadUsers();
     if (page) _ooPage = page;
     const search = (document.getElementById('oo-search').value || '').trim();
     const assign = (document.getElementById('oo-assign').value || '').trim();

@@ -59,7 +59,7 @@ class User {
     public function getAllWithPerformance() {
         $done = "('Dion - Chờ nghiệm thu', 'Kinkin nghiệm thu')";
         // Trộn task của BA (assignee) + Dev (dev_id) để mỗi user có metric tương ứng
-        $sql = "SELECT u.id, u.username, u.full_name, u.role, u.nickname,
+        $sql = "SELECT u.id, u.username, u.full_name, u.role, u.nickname, u.employee_code,
                        COUNT(DISTINCT IF(u.role IN ('ba','lead'), tba.id, td.id)) AS total_tasks,
                        SUM(CASE
                            WHEN u.role IN ('ba','lead') AND tba.status IN $done THEN 1
@@ -86,7 +86,7 @@ class User {
 
 
     public function getById($id) {
-        $stmt = $this->conn->prepare("SELECT id, username, full_name, role, nickname FROM {$this->table_name} WHERE id = ?");
+        $stmt = $this->conn->prepare("SELECT id, username, full_name, role, nickname, employee_code FROM {$this->table_name} WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -96,19 +96,19 @@ class User {
         return $stmt->execute([$id]);
     }
 
-    public function updateUser($id, $full_name, $role, $password = '', $nickname = null) {
+    public function updateUser($id, $full_name, $role, $password = '', $nickname = null, $employee_code = null) {
         if($nickname === null) $nickname = self::deriveNickname($full_name);
         if(!empty($password)) {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $this->conn->prepare(
-                "UPDATE {$this->table_name} SET full_name=?, role=?, nickname=?, password=? WHERE id=?"
+                "UPDATE {$this->table_name} SET full_name=?, role=?, nickname=?, employee_code=?, password=? WHERE id=?"
             );
-            return $stmt->execute([$full_name, $role, $nickname, $hash, $id]);
+            return $stmt->execute([$full_name, $role, $nickname, $employee_code, $hash, $id]);
         }
         $stmt = $this->conn->prepare(
-            "UPDATE {$this->table_name} SET full_name=?, role=?, nickname=? WHERE id=?"
+            "UPDATE {$this->table_name} SET full_name=?, role=?, nickname=?, employee_code=? WHERE id=?"
         );
-        return $stmt->execute([$full_name, $role, $nickname, $id]);
+        return $stmt->execute([$full_name, $role, $nickname, $employee_code, $id]);
     }
 }
 ?>

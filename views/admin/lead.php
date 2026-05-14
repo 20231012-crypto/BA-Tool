@@ -171,6 +171,7 @@
                                     <th>ID</th>
                                     <th>Họ tên</th>
                                     <th>Nickname</th>
+                                    <th>Mã NV</th>
                                     <th>Username</th>
                                     <th>Vai trò</th>
                                     <th>Tổng việc</th>
@@ -675,7 +676,7 @@ curl -H "Authorization: Bearer TOKEN" \
                     <!-- Search + filter -->
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
                         <input type="text" id="oo-search" class="form-control" placeholder="T&#236;m ki&#7871;m c&#244;ng vi&#7879;c..." style="flex:1;min-width:200px;" onkeydown="if(event.key==='Enter')ooLoad()">
-                        <input type="text" id="oo-assign" class="form-control" placeholder="M&#227; NV (VD: KK0230)" style="width:140px;">
+                        <select id="oo-assign" class="form-control" style="width:200px;"><option value="">-- Ng&#432;&#7901;i th&#7921;c hi&#7879;n --</option></select>
                         <input type="text" id="oo-owner" class="form-control" placeholder="Ng&#432;&#7901;i giao" style="width:140px;">
                         <button class="btn btn-primary btn-sm" onclick="ooLoad()">T&#236;m</button>
                         <button class="btn btn-outline btn-sm" onclick="ooReset()">Reset</button>
@@ -807,6 +808,10 @@ curl -H "Authorization: Bearer TOKEN" \
                 <small style="color:var(--text-muted);font-weight:400;">— ghi vào sheet, vd "Minh", "Phương Anh"</small>
             </label>
             <input type="text" id="um-nickname" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Mã nhân viên 1Office <small style="color:var(--text-muted);font-weight:400;">— VD: KK0230</small></label>
+            <input type="text" id="um-employee-code" class="form-control" placeholder="KK0230">
         </div>
         <div class="form-group">
             <label>Mật khẩu <small id="pass-hint" style="color:var(--text-muted);"></small></label>
@@ -1816,6 +1821,7 @@ function renderUsersTable() {
             <td>${u.id}</td>
             <td><strong>${esc(u.full_name)}</strong></td>
             <td><code style="background:#f0f4ff;padding:2px 6px;font-size:0.85rem;">${esc(u.nickname || '—')}</code>${nickWarn}</td>
+            <td>${u.employee_code ? `<code style="background:#f0fff4;padding:2px 6px;font-size:0.85rem;">${esc(u.employee_code)}</code>` : '<span style="color:var(--text-muted);">—</span>'}</td>
             <td>${esc(u.username)}</td>
             <td>${userRoleBadge(u.role)}</td>
             <td style="text-align:center;">${u.total_tasks||0}</td>
@@ -1823,7 +1829,7 @@ function renderUsersTable() {
             <td style="text-align:center;font-weight:bold;color:var(--success-color);">${u.on_time||0}</td>
             <td style="text-align:center;font-weight:bold;color:var(--danger-color);">${u.late||0}</td>
             <td>
-                <button class="btn btn-outline btn-icon" onclick="openEditUserModal(${u.id},'${esc(u.full_name)}','${u.role}','${esc(u.nickname || '')}')">Sửa</button>
+                <button class="btn btn-outline btn-icon" onclick="openEditUserModal(${u.id},'${esc(u.full_name)}','${u.role}','${esc(u.nickname || '')}','${esc(u.employee_code || '')}')">Sửa</button>
                 ${u.id != SESSION_USER_ID ? `<button class="btn btn-danger-outline btn-icon" onclick="confirmDeleteUser(${u.id},'${esc(u.full_name)}')">Xoá</button>` : ''}
             </td>
         </tr>`;
@@ -1868,13 +1874,14 @@ function openCreateUserModal() {
     document.getElementById('um-role').value = 'ba';
     document.getElementById('userModal').style.display = 'block';
 }
-function openEditUserModal(id, fullName, role, nickname) {
+function openEditUserModal(id, fullName, role, nickname, empCode) {
     currentUserAction = 'edit'; currentUserId = id;
     document.getElementById('user-modal-title').textContent = 'Cập nhật nhân viên';
     document.getElementById('username-group').style.display = 'none';
     document.getElementById('um-fullname').value = fullName;
     document.getElementById('um-nickname').value = nickname || '';
     document.getElementById('um-nickname').dataset.userEdited = '1'; // nickname đã có sẵn
+    document.getElementById('um-employee-code').value = empCode || '';
     document.getElementById('um-password').value = '';
     document.getElementById('um-password').required = false;
     document.getElementById('pass-hint').textContent = '(Bỏ trống nếu không đổi)';
@@ -1898,6 +1905,7 @@ function submitUserForm() {
         fd.append('full_name', document.getElementById('um-fullname').value);
         fd.append('password', document.getElementById('um-password').value);
         fd.append('nickname', nickname);
+        fd.append('employee_code', document.getElementById('um-employee-code').value.trim());
         fd.append('role', document.getElementById('um-role').value);
     }
     fetch(API, { method:'POST', body:fd }).then(r => r.json()).then(res => {
