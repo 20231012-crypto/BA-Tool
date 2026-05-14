@@ -163,7 +163,7 @@ class GoogleSheetsBot {
 
     /** Encode range cho Google Sheets API — giữ nguyên dấu ' và ! */
     private function encodeRange($range) {
-        return str_replace(['%27','%21'], ["'","!"], $this->encodeRange($range));
+        return str_replace(['%27','%21'], ["'","!"], rawurlencode($range));
     }
 
     public function clearRange($range) {
