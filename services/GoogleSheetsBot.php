@@ -213,11 +213,11 @@ class GoogleSheetsBot {
     }
 
     /**
-     * Ghi values vào range. valueInputOption=RAW để giữ plain text (không format auto).
+     * Ghi values vào range. valueInputOption=USER_ENTERED để Google tự parse date/number.
      */
     public function updateValues($range, array $values) {
         return $this->api('PUT',
-            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . $this->encodeRange($range) . "?valueInputOption=RAW",
+            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . $this->encodeRange($range) . "?valueInputOption=USER_ENTERED",
             ['range' => $range, 'majorDimension' => 'ROWS', 'values' => $values]
         );
     }
