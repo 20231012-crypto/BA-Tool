@@ -126,7 +126,41 @@
             <!-- ============ SYSTEMS SECTION (Danh sách hệ thống) ============ -->
             <?php include __DIR__ . '/_systems_section.php'; ?>
 
-            <!-- "Quản lý Dev" đã bỏ — Dev quản lý qua Google Sheet, BA chỉ phân Dev khi giao việc -->
+            <!-- ============ 1OFFICE SECTION ============ -->
+            <section id="section-oneoffice" class="page-section" style="display:none;">
+                <div class="card">
+                    <div class="section-title">
+                        <span>C&#244;ng vi&#7879;c 1Office</span>
+                        <span id="oo-count" style="color:var(--text-muted);font-size:0.85rem;font-weight:500;"></span>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" id="oo-quick-filters">
+                        <button class="btn btn-outline btn-sm oo-qf" data-qf="" onclick="ooQuickFilter('')" style="font-weight:600;">T&#7845;t c&#7843;</button>
+                        <button class="btn btn-outline btn-sm oo-qf" data-qf="near_deadline" onclick="ooQuickFilter('near_deadline')" style="border-color:#fd7e14;color:#fd7e14;">G&#7847;n h&#7871;t h&#7841;n</button>
+                        <button class="btn btn-outline btn-sm oo-qf" data-qf="overdue" onclick="ooQuickFilter('overdue')" style="border-color:#dc3545;color:#dc3545;">Qu&#225; h&#7841;n</button>
+                        <button class="btn btn-outline btn-sm oo-qf" data-qf="DOING" onclick="ooQuickFilter('DOING')" style="border-color:#0d6efd;color:#0d6efd;">&#272;ang th&#7921;c hi&#7879;n</button>
+                        <button class="btn btn-outline btn-sm oo-qf" data-qf="COMPLETED" onclick="ooQuickFilter('COMPLETED')" style="border-color:#198754;color:#198754;">Ho&#224;n th&#224;nh</button>
+                        <button class="btn btn-outline btn-sm oo-qf" data-qf="NOT_COMPLETED" onclick="ooQuickFilter('NOT_COMPLETED')" style="border-color:#dc3545;color:#dc3545;">Ch&#432;a ho&#224;n th&#224;nh</button>
+                        <button class="btn btn-outline btn-sm oo-qf" data-qf="PENDING" onclick="ooQuickFilter('PENDING')" style="border-color:#ffc107;color:#856404;">&#272;ang ch&#7901;</button>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                        <input type="text" id="oo-search" class="form-control" placeholder="T&#236;m ki&#7871;m c&#244;ng vi&#7879;c..." style="flex:1;min-width:200px;" onkeydown="if(event.key==='Enter')ooLoad()">
+                        <input type="text" id="oo-assign" class="form-control" placeholder="M&#227; NV (VD: KK0230)" style="width:140px;">
+                        <input type="text" id="oo-owner" class="form-control" placeholder="Ng&#432;&#7901;i giao" style="width:140px;">
+                        <button class="btn btn-primary btn-sm" onclick="ooLoad()">T&#236;m</button>
+                        <button class="btn btn-outline btn-sm" onclick="ooReset()">Reset</button>
+                    </div>
+                    <div class="scroll-shell">
+                        <table class="data-table">
+                            <thead><tr>
+                                <th>M&#227;</th><th>C&#244;ng vi&#7879;c</th><th>Tr&#7841;ng th&#225;i</th><th>&#431;u ti&#234;n</th>
+                                <th>Ng&#432;&#7901;i TH</th><th>Ng&#432;&#7901;i giao</th><th>B&#7855;t &#273;&#7847;u DK</th><th>K&#7871;t th&#250;c DK</th><th>Ti&#7871;n &#273;&#7897;</th>
+                            </tr></thead>
+                            <tbody id="oo-tbody"><tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:20px;">Nh&#7845;n "T&#236;m" &#273;&#7875; t&#7843;i d&#7919; li&#7879;u</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div id="oo-pagination" style="display:flex;justify-content:center;gap:6px;margin-top:12px;"></div>
+                </div>
+            </section>
 
             <section id="section-notifications" class="page-section" style="display:none;">
                 <div class="card">
@@ -212,6 +246,7 @@ function switchSection(name) {
     document.getElementById('page-title').textContent = titles[name] || '';
     if(name === 'tasks') loadTasks();
     if(name === 'systems') sysBackToList();
+    if(name === 'oneoffice' && !window._ooLoaded) { ooLoad(); window._ooLoaded = true; }
     if(name === 'notifications') loadNotifPage();
 }
 
@@ -827,6 +862,7 @@ setInterval(() => {
 <script src="<?php echo BASE_PATH; ?>/assets/js/start-coding-modal.js?v=4"></script>
 <script src="<?php echo BASE_PATH; ?>/assets/js/claim-modal.js?v=1"></script>
 <script src="<?php echo BASE_PATH; ?>/assets/js/system-tree.js?v=3"></script>
+<script src="<?php echo BASE_PATH; ?>/assets/js/oneoffice.js?v=1"></script>
 <script>const SYS_IS_LEAD = <?php echo $_SESSION['role']==='lead' ? 'true' : 'false'; ?>;</script>
 </body>
 </html>

@@ -269,6 +269,31 @@ if($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode($ak->getAll());
         exit;
     }
+
+    // ─── 1Office tasks (proxy) ──────────────────────────────────
+    if($action === 'get_1o_tasks') {
+        if(!isset($_SESSION['user_id'])) { echo json_encode(['error'=>true,'message'=>'Unauthorized']); exit; }
+        require_once '../models/OneOfficeApi.php';
+
+        $page   = max(1, intval($_GET['page'] ?? 1));
+        $limit  = max(1, min(100, intval($_GET['limit'] ?? 50)));
+        $filters = [];
+
+        if(!empty($_GET['assign_ids']))      $filters['assign_ids']      = $_GET['assign_ids'];
+        if(!empty($_GET['status']))          $filters['status']          = $_GET['status'];
+        if(!empty($_GET['start_plan_from'])) $filters['start_plan_from'] = $_GET['start_plan_from'];
+        if(!empty($_GET['start_plan_to']))   $filters['start_plan_to']   = $_GET['start_plan_to'];
+        if(!empty($_GET['end_plan_from']))   $filters['end_plan_from']   = $_GET['end_plan_from'];
+        if(!empty($_GET['end_plan_to']))     $filters['end_plan_to']     = $_GET['end_plan_to'];
+        if(!empty($_GET['s']))               $filters['s']               = $_GET['s'];
+        if(!empty($_GET['is_overdue_task'])) $filters['is_overdue_task'] = $_GET['is_overdue_task'];
+        if(!empty($_GET['priority']))        $filters['priority']        = $_GET['priority'];
+        if(!empty($_GET['owner_ids']))       $filters['owner_ids']       = $_GET['owner_ids'];
+
+        $result = OneOfficeApi::getTasks($filters, $page, $limit);
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
 
 // ══════════════════════════════════════════════════════════════════

@@ -77,6 +77,13 @@ $fullName = $_SESSION['full_name'] ?? '';
         </button>
         <?php endif; ?>
 
+        <div class="sidebar-menu-label">1Office</div>
+        <button class="sidebar-item <?php echo $activeMenu==='oneoffice' ? 'active' : ''; ?>"
+                onclick="switchSection('oneoffice')">
+            <span class="ic">📊</span>
+            Công việc 1O
+        </button>
+
         <div class="sidebar-menu-label">Hệ thống</div>
         <button class="sidebar-item <?php echo $activeMenu==='notifications' ? 'active' : ''; ?>"
                 onclick="switchSection('notifications')">
