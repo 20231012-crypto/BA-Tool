@@ -152,6 +152,35 @@ class GoogleSheetsBot {
     }
 
     /**
+     * Xóa hẳn các dòng khỏi sheet (delete rows, không phải clear).
+     * $sheetId = sheetId số (lấy từ listTabs()).
+     * $rowIndices = mảng 0-based row index (VD: row 2 trên sheet = index 1).
+     * Xóa từ dưới lên để không lệch index.
+     */
+    public function deleteRows($sheetId, array $rowIndices) {
+        if (empty($rowIndices)) return;
+        // Sort giảm dần để xóa từ dưới lên
+        rsort($rowIndices);
+        $requests = [];
+        foreach ($rowIndices as $idx) {
+            $requests[] = [
+                'deleteDimension' => [
+                    'range' => [
+                        'sheetId'    => (int)$sheetId,
+                        'dimension'  => 'ROWS',
+                        'startIndex' => $idx,
+                        'endIndex'   => $idx + 1,
+                    ]
+                ]
+            ];
+        }
+        return $this->api('POST',
+            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}:batchUpdate",
+            ['requests' => $requests]
+        );
+    }
+
+    /**
      * Đảm bảo tab tồn tại; tạo nếu chưa có. Trả về true nếu OK.
      */
     public function ensureTab($title) {

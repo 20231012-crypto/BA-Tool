@@ -247,11 +247,13 @@ class DevSheetService {
         $range = "'" . $newTab . "'!A" . $startRow;
         $bot->updateValues($range, $incompletRows);
 
-        // Xóa dòng ở tab cũ — xóa từ dưới lên để không lệch index
-        // Clear nội dung thay vì xóa dòng (giữ nguyên structure)
-        foreach (array_reverse($rowsToDelete) as $idx) {
-            $sheetRow = $idx + 2; // Convert to 1-based sheet row
-            $bot->updateValues("'" . $oldTab . "'!A" . $sheetRow . ":T" . $sheetRow, [array_fill(0, 20, '')]);
+        // Xóa hẳn dòng ở tab cũ (delete rows, không phải clear)
+        $tabs = $bot->listTabs();
+        $oldSheetId = $tabs[$oldTab] ?? null;
+        if ($oldSheetId !== null) {
+            // Convert 0-based data index → 1-based sheet row index (row 2 = index 1)
+            $sheetRowIndices = array_map(function($idx) { return $idx + 1; }, $rowsToDelete);
+            $bot->deleteRows($oldSheetId, $sheetRowIndices);
         }
 
         // Cập nhật sheet_tab + sheet_row trong DB cho các task vừa move
