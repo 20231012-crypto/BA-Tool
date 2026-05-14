@@ -15,11 +15,8 @@ function akLoad() {
         }
         tbody.innerHTML = keys.map(k => `
             <tr>
-                <td><strong>${esc(k.name)}</strong><br><small style="color:var(--text-muted);">${esc(k.creator_name || '')}</small></td>
-                <td>
-                    <code style="font-size:0.72rem;word-break:break-all;display:block;max-width:220px;background:#f5f5f5;padding:4px 6px;border-radius:3px;">${esc(k.token)}</code>
-                    <button class="btn btn-outline btn-sm" style="margin-top:4px;font-size:0.7rem;" onclick="navigator.clipboard.writeText('${esc(k.token)}');this.textContent='Da copy!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
-                </td>
+                <td><strong style="cursor:pointer;color:var(--primary-color);text-decoration:underline;" onclick="akShowDetail('${esc(k.name)}','${esc(k.token)}','${esc(k.methods)}')">${esc(k.name)}</strong><br><small style="color:var(--text-muted);">${esc(k.creator_name || '')}</small></td>
+                <td><code style="font-size:0.72rem;word-break:break-all;display:block;max-width:180px;background:#f5f5f5;padding:4px 6px;border-radius:3px;">${esc(k.token.substring(0,12))}...${esc(k.token.substring(k.token.length-8))}</code></td>
                 <td><span class="badge badge-pending">${esc(k.methods)}</span></td>
                 <td>${k.is_active == 1
                     ? '<span class="badge badge-done">Active</span>'
@@ -107,6 +104,65 @@ function akDelete(id, name) {
     fd.append('action', 'delete_api_key');
     fd.append('id', id);
     fetch(API, { method: 'POST', body: fd }).then(r => r.json()).then(() => akLoad());
+}
+
+function akShowDetail(name, token, methods) {
+    const baseUrl = window.location.origin + (typeof BASE_PATH !== 'undefined' ? BASE_PATH : '');
+    const apiUrl = baseUrl + '/api/v1/tasks.php';
+
+    // Create modal if not exists
+    let modal = document.getElementById('akDetailModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'akDetailModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div class="modal" style="max-width:650px;">
+            <div class="modal-header">
+                <h3>${esc(name)}</h3>
+                <button class="modal-close" onclick="document.getElementById('akDetailModal').classList.remove('open')">&times;</button>
+            </div>
+            <div class="modal-body" style="font-size:0.88rem;">
+                <div class="form-group">
+                    <label>Token</label>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="text" class="form-control" value="${esc(token)}" readonly id="ak-detail-token" style="font-family:monospace;font-size:0.82rem;">
+                        <button class="btn btn-outline btn-sm" onclick="akDetailCopy('ak-detail-token')">Copy</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>API URL</label>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="text" class="form-control" value="${esc(apiUrl)}" readonly id="ak-detail-url" style="font-size:0.82rem;">
+                        <button class="btn btn-outline btn-sm" onclick="akDetailCopy('ak-detail-url')">Copy</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ph\u01b0\u01a1ng th\u1ee9c</label>
+                    <span class="badge badge-pending">${esc(methods)}</span>
+                </div>
+                <hr style="margin:14px 0;">
+                <label>VD: G\u1ecdi nhanh b\u1eb1ng curl</label>
+                <div style="position:relative;">
+                    <pre id="ak-detail-curl" style="background:#1e1e1e;color:#d4d4d4;padding:12px;overflow-x:auto;font-size:0.78rem;border-radius:4px;margin:6px 0;">curl -H "Authorization: Bearer ${esc(token)}" "${esc(apiUrl)}?limit=5"</pre>
+                    <button class="btn btn-outline btn-sm" style="position:absolute;top:6px;right:6px;font-size:0.7rem;" onclick="akDetailCopy('ak-detail-curl')">Copy</button>
+                </div>
+            </div>
+        </div>
+    `;
+    modal.classList.add('open');
+}
+
+function akDetailCopy(elId) {
+    const el = document.getElementById(elId);
+    const text = el.value || el.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = el.closest('.form-group, div').querySelector('.btn');
+        if (btn) { const orig = btn.textContent; btn.textContent = '\u0110\u00e3 copy!'; setTimeout(() => btn.textContent = orig, 1500); }
+    });
 }
 
 if (typeof esc === 'undefined') {
