@@ -261,6 +261,14 @@ if($_SERVER['REQUEST_METHOD'] === 'GET') {
         ]);
         exit;
     }
+
+    // ─── API Keys list (Lead only, GET) ─────────────────────────
+    if($action === 'get_api_keys') {
+        if(!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'lead') { echo json_encode([]); exit; }
+        $ak = new ApiKey($db);
+        echo json_encode($ak->getAll());
+        exit;
+    }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -959,14 +967,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ─── API Keys Management (Lead only) ──────────────────────────
-    if(in_array($action, ['get_api_keys','create_api_key','toggle_api_key','delete_api_key','regenerate_api_key'])) {
+    if(in_array($action, ['create_api_key','toggle_api_key','delete_api_key','regenerate_api_key'])) {
         if($_SESSION['role'] !== 'lead') { echo json_encode(['success'=>false,'message'=>'Lead only']); exit; }
         $ak = new ApiKey($db);
-
-        if($action === 'get_api_keys') {
-            echo json_encode($ak->getAll());
-            exit;
-        }
         if($action === 'create_api_key') {
             $name = trim($_POST['name'] ?? '');
             $methods = trim($_POST['methods'] ?? 'GET');
