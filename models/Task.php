@@ -37,8 +37,20 @@ class Task {
         return 'YC' . str_pad($row['next_num'], 3, '0', STR_PAD_LEFT);
     }
 
+    /** Kiểm tra mã YC đã tồn tại chưa */
+    private function maYcExists($maYc) {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM {$this->table_name} WHERE ma_yc = ?");
+        $stmt->execute([$maYc]);
+        return $stmt->fetchColumn() > 0;
+    }
+
     public function create($data) {
-        $data['ma_yc'] = $this->generateMaYc();
+        // Sinh mã YC không trùng — retry tối đa 5 lần nếu bị race condition
+        $maxRetry = 5;
+        for ($i = 0; $i < $maxRetry; $i++) {
+            $data['ma_yc'] = $this->generateMaYc();
+            if (!$this->maYcExists($data['ma_yc'])) break;
+        }
 
         $query = "INSERT INTO " . $this->table_name . "
                   (ma_yc, requester_name, requester_dept, system_name, description, task_type,

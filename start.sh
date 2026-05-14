@@ -1,10 +1,13 @@
 #!/bin/bash
-# Start both web server and dev sheet poller
+# Start web server + poller + auto-sync on Railway
 
 # Start poller in background
 php -f /app/cron/poll_dev_sheet.php &
-POLLER_PID=$!
-echo "Poller started (PID: $POLLER_PID)"
+echo "Poller started (PID: $!)"
+
+# Start auto-sync daemon in background
+php -f /app/cron/auto_sync_daemon.php &
+echo "Auto-sync daemon started (PID: $!)"
 
 # Start web server in foreground
 php -d display_errors=1 \
