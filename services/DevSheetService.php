@@ -118,7 +118,7 @@ class DevSheetService {
 
     public function __construct($db) { $this->db = $db; }
 
-    private function getBot() {
+    public function getBot() {
         if($this->bot) return $this->bot;
         $bs  = new BotSettings($this->db);
         $cfg = $bs->get();

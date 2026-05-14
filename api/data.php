@@ -628,11 +628,24 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            // Khi task Huỷ được back lại (reopen) → ghi vào tab tuần mới nhất
+            // Khi task Huỷ được back lại (reopen) → xóa ở sheet cũ + ghi vào tab tuần mới
             if($result['old_status'] === 'Huỷ' && $direction === 'back') {
                 try {
                     require_once '../services/DevSheetService.php';
                     $dss = new DevSheetService($db);
+                    // Xóa dòng ở sheet cũ nếu có
+                    $taskRow = $task->getById($id);
+                    $oldTab = $taskRow['sheet_tab'] ?? null;
+                    $oldRow = $taskRow['sheet_row'] ?? null;
+                    if ($oldTab && $oldRow) {
+                        $bot = $dss->getBot();
+                        $tabs = $bot->listTabs();
+                        if (isset($tabs[$oldTab])) {
+                            $bot->deleteRows($tabs[$oldTab], [(int)$oldRow - 1]); // 0-based index
+                        }
+                        // Reset sheet_tab/row để writeTaskToSheet ghi mới
+                        $task->update($id, ['sheet_tab' => null, 'sheet_row' => null], 'lead');
+                    }
                     $dss->writeTaskToSheet($id);
                     $result['sheet_synced'] = true;
                 } catch(Exception $e) {
