@@ -12,6 +12,7 @@ require_once '../services/TaskSyncService.php';
 require_once '../models/SystemRegistry.php';
 require_once '../models/UserGroup.php';
 require_once '../services/BASheetWebhook.php';
+require_once '../models/ApiKey.php';
 
 $database = new Database();
 $db = $database->getConnection();
@@ -953,6 +954,42 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             $res = $svc->runImport($opts);
             echo json_encode($res);
+            exit;
+        }
+    }
+
+    // ─── API Keys Management (Lead only) ──────────────────────────
+    if(in_array($action, ['get_api_keys','create_api_key','toggle_api_key','delete_api_key','regenerate_api_key'])) {
+        if($_SESSION['role'] !== 'lead') { echo json_encode(['success'=>false,'message'=>'Lead only']); exit; }
+        $ak = new ApiKey($db);
+
+        if($action === 'get_api_keys') {
+            echo json_encode($ak->getAll());
+            exit;
+        }
+        if($action === 'create_api_key') {
+            $name = trim($_POST['name'] ?? '');
+            $methods = trim($_POST['methods'] ?? 'GET');
+            if(!$name) { echo json_encode(['success'=>false,'message'=>'Tên API key không được trống']); exit; }
+            $result = $ak->create($name, $methods, $_SESSION['user_id']);
+            echo json_encode(['success'=>true, 'data'=>$result]);
+            exit;
+        }
+        if($action === 'toggle_api_key') {
+            $id = intval($_POST['id'] ?? 0);
+            $active = intval($_POST['active'] ?? 0);
+            echo json_encode(['success'=>$ak->toggleActive($id, $active)]);
+            exit;
+        }
+        if($action === 'delete_api_key') {
+            $id = intval($_POST['id'] ?? 0);
+            echo json_encode(['success'=>$ak->delete($id)]);
+            exit;
+        }
+        if($action === 'regenerate_api_key') {
+            $id = intval($_POST['id'] ?? 0);
+            $newToken = $ak->regenerateToken($id);
+            echo json_encode(['success'=>true, 'token'=>$newToken]);
             exit;
         }
     }

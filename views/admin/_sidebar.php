@@ -61,6 +61,11 @@ $fullName = $_SESSION['full_name'] ?? '';
             <span class="ic">🤖</span>
             Đồng bộ Sheet
         </button>
+        <button class="sidebar-item <?php echo $activeMenu==='apikeys' ? 'active' : ''; ?>"
+                onclick="switchSection('apikeys')">
+            <span class="ic">🔑</span>
+            API
+        </button>
         <?php endif; ?>
 
         <?php if($role === 'ba'): ?>

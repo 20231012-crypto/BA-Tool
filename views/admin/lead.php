@@ -509,6 +509,136 @@
                 </div>
             </section>
 
+            <!-- ============ API KEYS SECTION ============ -->
+            <section id="section-apikeys" class="page-section" style="display:none;">
+                <div class="card">
+                    <div class="section-title">
+                        <span>API Management</span>
+                        <button class="btn btn-primary btn-sm" onclick="akShowCreate()">+ Tao API Key</button>
+                    </div>
+
+                    <!-- Create form (hidden by default) -->
+                    <div id="ak-create-form" style="display:none;margin-bottom:16px;padding:16px;background:#f0f4ff;border:1px solid #cfe2ff;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div class="form-group" style="margin:0;">
+                                <label>Ten API Key</label>
+                                <input type="text" id="ak-name" class="form-control" placeholder="VD: Slack Integration">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Phuong thuc cho phep</label>
+                                <select id="ak-methods" class="form-control">
+                                    <option value="GET">GET (chi doc)</option>
+                                    <option value="GET,POST">GET + POST (doc + tao)</option>
+                                    <option value="GET,POST,PUT">GET + POST + PUT (doc + tao + sua)</option>
+                                    <option value="ALL" selected>ALL (toan quyen)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top:10px;text-align:right;">
+                            <button class="btn btn-outline btn-sm" onclick="document.getElementById('ak-create-form').style.display='none'">Huy</button>
+                            <button class="btn btn-primary btn-sm" onclick="akCreate()">Tao Key</button>
+                        </div>
+                    </div>
+
+                    <!-- Token display (after create) -->
+                    <div id="ak-token-display" style="display:none;margin-bottom:16px;padding:16px;background:#f0fff4;border:1px solid #a3cfbb;">
+                        <strong style="color:#198754;">Token da tao thanh cong! Copy ngay, se khong hien lai:</strong>
+                        <div style="margin-top:8px;padding:10px;background:#fff;border:1px solid #ddd;font-family:monospace;word-break:break-all;font-size:0.9rem;" id="ak-new-token"></div>
+                        <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="akCopyToken()">Copy Token</button>
+                    </div>
+
+                    <!-- API Keys table -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Ten</th>
+                                <th>Token</th>
+                                <th>Phuong thuc</th>
+                                <th>Trang thai</th>
+                                <th>Luot goi</th>
+                                <th>Lan cuoi</th>
+                                <th>Hanh dong</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ak-tbody">
+                            <tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Dang tai...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- API Documentation -->
+                <div class="card" style="margin-top:16px;">
+                    <div class="section-title"><span>Tai lieu API</span></div>
+                    <div style="font-size:0.88rem;line-height:1.7;">
+                        <p><strong>Base URL:</strong> <code id="ak-base-url"></code></p>
+                        <p><strong>Auth:</strong> Header <code>Authorization: Bearer &lt;token&gt;</code></p>
+
+                        <h4 style="margin:16px 0 8px;color:var(--primary-color);">GET /api/v1/tasks.php</h4>
+                        <p>Lay danh sach tasks hoac 1 task cu the.</p>
+                        <pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;overflow-x:auto;font-size:0.82rem;border-radius:4px;"><code># Danh sach (co filter)
+curl -H "Authorization: Bearer TOKEN" \
+  "<?php echo BASE_PATH; ?>/api/v1/tasks.php?limit=10&status=Dion+-+dang+xu+ly"
+
+# Tim theo ma YC
+curl -H "Authorization: Bearer TOKEN" \
+  "<?php echo BASE_PATH; ?>/api/v1/tasks.php?ma_yc=YC001"
+
+# Tim theo ID
+curl -H "Authorization: Bearer TOKEN" \
+  "<?php echo BASE_PATH; ?>/api/v1/tasks.php?id=123"</code></pre>
+                        <p><strong>Query params:</strong> <code>status</code>, <code>assignee_id</code>, <code>system_name</code>, <code>dev_status</code>, <code>limit</code> (max 500), <code>offset</code></p>
+
+                        <h4 style="margin:16px 0 8px;color:#198754;">POST /api/v1/tasks.php</h4>
+                        <p>Tao task moi. Body JSON.</p>
+                        <pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;overflow-x:auto;font-size:0.82rem;border-radius:4px;"><code>curl -X POST -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "requester_name": "Nguyen Van A",
+    "requester_dept": "IT",
+    "system_name": "Tool.vanchuyenkinkin",
+    "description": "Mo ta yeu cau",
+    "task_type": "Fix loi he thong",
+    "priority_requester": "3. Khong gap - Quan trong",
+    "start_date": "2026-05-14",
+    "expected_end_date": "2026-05-20"
+  }' "<?php echo BASE_PATH; ?>/api/v1/tasks.php"</code></pre>
+                        <p><strong>Required fields:</strong> <code>requester_name</code>, <code>requester_dept</code>, <code>system_name</code>, <code>description</code>, <code>task_type</code>, <code>priority_requester</code>, <code>start_date</code>, <code>expected_end_date</code></p>
+
+                        <h4 style="margin:16px 0 8px;color:#fd7e14;">PUT /api/v1/tasks.php?id=123</h4>
+                        <p>Cap nhat task. Body JSON chi chua cac truong can sua.</p>
+                        <pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;overflow-x:auto;font-size:0.82rem;border-radius:4px;"><code>curl -X PUT -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "Dion - dang xu ly",
+    "priority_ba": "3. Khong gap - Quan trong",
+    "implementing_unit": "DION"
+  }' "<?php echo BASE_PATH; ?>/api/v1/tasks.php?id=123"</code></pre>
+                        <p><strong>Updatable fields:</strong> <code>status</code>, <code>priority_ba</code>, <code>office_link</code>, <code>assignee_id</code>, <code>dev_id</code>, <code>dev_status</code>, <code>dev_notes</code>, <code>implementing_unit</code>, <code>classification</code>, <code>ba_description</code>, <code>test_status</code>, <code>test_date</code>, ...</p>
+
+                        <h4 style="margin:16px 0 8px;">Response format</h4>
+                        <pre style="background:#1e1e1e;color:#d4d4d4;padding:12px;overflow-x:auto;font-size:0.82rem;border-radius:4px;"><code>// Thanh cong
+{ "success": true, "data": { ... } }
+
+// Danh sach
+{ "success": true, "total": 177, "limit": 100, "offset": 0, "data": [...] }
+
+// Loi
+{ "success": false, "error": "Missing required field: description" }</code></pre>
+
+                        <h4 style="margin:16px 0 8px;">HTTP Status Codes</h4>
+                        <table class="data-table" style="font-size:0.84rem;">
+                            <tr><td><code>200</code></td><td>Thanh cong</td></tr>
+                            <tr><td><code>201</code></td><td>Tao thanh cong</td></tr>
+                            <tr><td><code>400</code></td><td>Request khong hop le</td></tr>
+                            <tr><td><code>401</code></td><td>Thieu token</td></tr>
+                            <tr><td><code>403</code></td><td>Token sai / method khong duoc phep</td></tr>
+                            <tr><td><code>404</code></td><td>Khong tim thay</td></tr>
+                            <tr><td><code>405</code></td><td>Method khong ho tro</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- KPI Dashboard đã chuyển sang link external (xem sidebar "Phân tích KPI ↗") -->
 
             <!-- ============ NOTIFICATIONS SECTION ============ -->
@@ -698,8 +828,10 @@ function switchSection(name) {
         workflows:    'Quy trình tự động',
         form:         'Form công khai & Cấu hình',
         botsync:      'Bot đồng bộ Google Sheet',
+        apikeys:      'API Management',
         notifications:'Thông báo của tôi'
     };
+    if(name === 'apikeys') akLoad();
     // redirect aliases cũ → form
     if(name === 'formconfig' || name === 'formlog') name = 'form';
     document.getElementById('page-title').textContent = titles[name] || '';
@@ -1904,6 +2036,7 @@ setInterval(() => {
 <script src="<?php echo BASE_PATH; ?>/assets/js/workflow-builder.js?v=1"></script>
 <script src="<?php echo BASE_PATH; ?>/assets/js/form-config.js?v=1"></script>
 <script src="<?php echo BASE_PATH; ?>/assets/js/bot-sync.js?v=1"></script>
+<script src="<?php echo BASE_PATH; ?>/assets/js/api-keys.js?v=1"></script>
 <script src="<?php echo BASE_PATH; ?>/assets/js/system-tree.js?v=3"></script>
 <script>const SYS_IS_LEAD = <?php echo $_SESSION['role']==='lead' ? 'true' : 'false'; ?>;</script>
 </body>
