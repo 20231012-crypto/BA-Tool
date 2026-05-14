@@ -5,7 +5,7 @@
 let _ooPage = 1;
 let _ooLimit = 50;
 let _ooActiveQF = '';
-const OO_TASK_URL = 'https://kinkin.1office.vn/work/normal/detail/';
+const OO_TASK_URL = 'https://kinkin.1office.vn/work-normal-normal/view?ID=';
 
 function ooLoad(page) {
     if (page) _ooPage = page;
