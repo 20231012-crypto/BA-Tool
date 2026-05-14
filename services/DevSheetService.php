@@ -180,9 +180,15 @@ class DevSheetService {
             return $target;
         }
 
-        // Sort tab tuần theo "gần với hôm nay" — đơn giản: chọn tab đầu tiên (sheet thường list theo thứ tự)
-        $firstName = array_key_first($weekTabs);
-        $sourceSheetId = $weekTabs[$firstName];
+        // Chọn tab tuần GẦN NHẤT (tab đầu trong danh sách, thường là tuần trước)
+        // Google Sheets list tabs theo thứ tự vị trí, tab mới nhất thường ở đầu
+        $sourceTabName = null;
+        $sourceSheetId = null;
+        foreach ($weekTabs as $n => $sid) {
+            $sourceTabName = $n;
+            $sourceSheetId = $sid;
+            break;
+        }
         $bot->duplicateTab($sourceSheetId, $target);
         // Clear data rows (giữ header)
         try { $bot->clearDataRows($target); } catch(Exception $e) { /* ignore */ }
@@ -414,6 +420,7 @@ class DevSheetService {
     // ============================================================
 
     private function buildRow($t, $opts = []) {
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
         $devStatus = $opts['force_dev_status']
             ?? (self::DEV_STATUS_DB_TO_SHEET[$t['dev_status']] ?? ($t['dev_status'] ?? ''));
 
@@ -461,7 +468,7 @@ class DevSheetService {
                 $s = $t['ba_start_date'] ?? '';
                 $e = $t['ba_end_date']   ?? '';
                 if(!$s && !$e) return '';
-                $fmt = function($d) { return $d ? date('m/d/Y', strtotime($d)) : ''; };
+                $fmt = function($d) { return $d ? date('d/m/Y', strtotime($d)) : ''; };
                 return $fmt($s) . ($s && $e ? ' - ' : '') . $fmt($e);
             })(),
         ];

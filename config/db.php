@@ -2,7 +2,7 @@
 // External KPI dashboard URL — bạn cập nhật khi có link thực tế.
 // Sidebar Lead sẽ dùng URL này cho menu "Phân tích KPI".
 if(!defined('KPI_EXTERNAL_URL')) {
-    define('KPI_EXTERNAL_URL', '#'); // TODO: thay bằng URL thật
+    define('KPI_EXTERNAL_URL', 'https://dashboard.lxtruong03.workers.dev/');
 }
 
 // Base path: '/BA.Tool' trên XAMPP, '' trên Railway
