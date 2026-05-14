@@ -431,12 +431,17 @@
                     </div>
 
                     <!-- ======== BA SHEET CONFIG ======== -->
-                    <h4 style="margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--primary-color);color:var(--primary-color);">BA Sheet (Tong quan + per-user tabs)</h4>
+                    <h4 style="margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--primary-color);color:var(--primary-color);">BA Sheet (Tong quan + per-user tabs) — Realtime Webhook</h4>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px;background:#fafafa;border:1px solid var(--border-color);">
                         <div class="form-group" style="grid-column: span 2; margin:0;">
-                            <label>Link Google Sheet BA <span style="color:var(--danger-color);">*</span></label>
+                            <label>Link Google Sheet BA</label>
                             <input type="text" id="bs-sheet-url" class="form-control" placeholder="https://docs.google.com/spreadsheets/d/...">
-                            <small style="color:var(--text-muted);">Sheet ID se tu trich tu URL. Bot phai duoc share quyen Editor vao sheet nay.</small>
+                            <small style="color:var(--text-muted);">Sheet ID se tu trich tu URL. Dung cho chuc nang Import tu Sheet.</small>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2; margin:0;">
+                            <label>Webhook URL (Google Apps Script) <span style="color:var(--danger-color);">*</span></label>
+                            <input type="text" id="bs-webhook-url" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+                            <small style="color:var(--text-muted);">Moi khi task thay doi, he thong tu dong gui webhook den Apps Script de ghi vao BA Sheet realtime.</small>
                         </div>
                         <div class="form-group" style="margin:0;">
                             <label>Gio chay auto-sync (24h)</label>

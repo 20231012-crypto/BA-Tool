@@ -9,6 +9,7 @@ function bsLoadSettings() {
 
         // BA Sheet
         document.getElementById('bs-sheet-url').value = cfg.sheet_url || '';
+        document.getElementById('bs-webhook-url').value = cfg.ba_webhook_url || '';
         document.getElementById('bs-bot-email').value = cfg.bot_email || cfg.credentials_email || '';
         document.getElementById('bs-hour').value = cfg.schedule_hour ?? 23;
         document.getElementById('bs-minute').value = cfg.schedule_minute ?? 0;
@@ -37,9 +38,10 @@ function bsLoadSettings() {
             <div class="bs-stat-value">${fileOk ? '&#10003; Da co' : '&#10007; Chua co'}</div>
             ${cfg.credentials_email ? `<small>${esc(cfg.credentials_email)}</small>` : ''}
         </div>`;
-        statusHtml += `<div class="bs-stat-cell ${parseInt(cfg.enabled)?'ok':''}">
-            <div class="bs-stat-label">BA Sheet Sync</div>
-            <div class="bs-stat-value">${parseInt(cfg.enabled) ? '&#10003; Dang bat' : '&#9208; Dang tat'}</div>
+        const webhookOk = !!(cfg.ba_webhook_url);
+        statusHtml += `<div class="bs-stat-cell ${webhookOk?'ok':'err'}">
+            <div class="bs-stat-label">BA Sheet Webhook</div>
+            <div class="bs-stat-value">${webhookOk ? '&#10003; Realtime' : '&#10007; Chua cau hinh'}</div>
         </div>`;
         statusHtml += `<div class="bs-stat-cell ${pollerOn?'ok':''}">
             <div class="bs-stat-label">Dev Sheet Poller</div>
@@ -63,6 +65,7 @@ function bsSaveSettings() {
     fd.append('action', 'save_bot_settings');
     // BA Sheet
     fd.append('sheet_url', document.getElementById('bs-sheet-url').value.trim());
+    fd.append('ba_webhook_url', document.getElementById('bs-webhook-url').value.trim());
     fd.append('bot_email', document.getElementById('bs-bot-email').value.trim());
     fd.append('schedule_hour', document.getElementById('bs-hour').value);
     fd.append('schedule_minute', document.getElementById('bs-minute').value);

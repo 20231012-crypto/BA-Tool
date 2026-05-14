@@ -30,7 +30,8 @@ class BotSettings {
             'sheet_url','sheet_id','bot_email','credentials_path',
             'schedule_hour','schedule_minute','enabled',
             'dev_sheet_url','dev_sheet_id',
-            'poller_enabled','poller_interval'
+            'poller_enabled','poller_interval',
+            'ba_webhook_url'
         ]));
         if(empty($allowed)) return ['success' => false, 'message' => 'Không có dữ liệu'];
 

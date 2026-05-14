@@ -11,9 +11,15 @@ require_once '../models/BotSettings.php';
 require_once '../services/TaskSyncService.php';
 require_once '../models/SystemRegistry.php';
 require_once '../models/UserGroup.php';
+require_once '../services/BASheetWebhook.php';
 
 $database = new Database();
 $db = $database->getConnection();
+
+// Helper: gửi webhook khi task thay đổi (fire-and-forget)
+function webhookSyncTask($db, $taskId) {
+    try { (new BASheetWebhook($db))->syncTask($taskId); } catch(Throwable $e) { /* silent */ }
+}
 
 // ── Notification helper ────────────────────────────────────────────────────
 function notifyOnTransition($db, $task, $oldStatus, $newStatus, $direction) {
@@ -310,6 +316,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         if(isset($_POST['assignee_note'])) $data['assignee_note'] = trim($_POST['assignee_note']);
 
         $ok = $task->update($id, $data, 'lead');
+        if($ok) webhookSyncTask($db, $id);
         echo json_encode(['success' => $ok]);
         exit;
     }
@@ -320,7 +327,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $task = new Task($db);
         $id = intval($_POST['task_id']);
         $sysId = !empty($_POST['system_id']) ? intval($_POST['system_id']) : null;
-        // Khi đổi hệ thống, phải reset 4 cấp node vì cây khác nhau
         $ok = $task->update($id, [
             'system_id'       => $sysId,
             'module_node_id'  => null,
@@ -328,6 +334,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             'logic_node_id'   => null,
             'hidden_node_id'  => null,
         ], $_SESSION['role']);
+        if($ok) webhookSyncTask($db, $id);
         echo json_encode(['success' => $ok]);
         exit;
     }
@@ -412,6 +419,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg      = "$actorName giao task \"{$t['system_name']}\" ($maYc) cho bạn. Vui lòng kiểm tra và nhận việc.";
             $notif->create($devId, $title, $msg, $id, $_SESSION['user_id'], 'dev_assign');
         }
+        if($ok) webhookSyncTask($db, $id);
         echo json_encode(['success' => $ok]);
         exit;
     }
@@ -541,6 +549,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $ok = $task->update($id, $data, $_SESSION['role']);
+        if($ok) webhookSyncTask($db, $id);
         echo json_encode(['success' => $ok]);
         exit;
     }
@@ -560,6 +569,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         if(empty($data)) { echo json_encode(['success'=>true]); exit; }
 
         $ok = $task->update($id, $data, $_SESSION['role']);
+        if($ok) webhookSyncTask($db, $id);
         echo json_encode(['success' => $ok]);
         exit;
     }
@@ -608,6 +618,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                     error_log("[DevSheet] writeTaskToSheet failed for task #$id: " . $e->getMessage());
                 }
             }
+            webhookSyncTask($db, $id);
         }
         echo json_encode($result);
         exit;
@@ -888,6 +899,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'schedule_hour'   => max(0, min(23, intval($_POST['schedule_hour'] ?? 23))),
                 'schedule_minute' => max(0, min(59, intval($_POST['schedule_minute'] ?? 0))),
                 'enabled'         => !empty($_POST['enabled']) ? 1 : 0,
+                'ba_webhook_url'  => trim($_POST['ba_webhook_url'] ?? ''),
                 'dev_sheet_url'   => $devSheetUrl,
                 'dev_sheet_id'    => BotSettings::extractSheetId($devSheetUrl),
                 'poller_enabled'  => !empty($_POST['poller_enabled']) ? 1 : 0,

@@ -493,7 +493,16 @@ class DevSheetService {
         $sql = "UPDATE tasks SET " . implode(', ', $changes) . " WHERE id = ?";
         $params[] = (int)$task['id'];
         $upd = $this->db->prepare($sql);
-        return $upd->execute($params);
+        $ok = $upd->execute($params);
+
+        // Sync lên BA Sheet qua webhook
+        if ($ok) {
+            try {
+                require_once __DIR__ . '/BASheetWebhook.php';
+                (new BASheetWebhook($this->db))->syncTask((int)$task['id']);
+            } catch(Throwable $e) { /* silent */ }
+        }
+        return $ok;
     }
 
     // ============================================================
