@@ -110,10 +110,10 @@ class DevSheetService {
 
     /** Mapping priority DB → dropdown sheet (4 giá trị) */
     const PRIORITY_TO_SHEET = [
-        '4. Gấp - Quan trọng'              => 'urgent',
-        '3. Không gấp - Quan trọng'        => 'higher',
-        '2. Gấp - Không quan trọng'        => 'medium',
-        '1. Không gấp - Không quan trọng'  => 'lower',
+        '4. Gấp - Quan trọng'              => 'Urgen',
+        '3. Không gấp - Quan trọng'        => 'Higher',
+        '2. Gấp - Không quan trọng'        => 'Medium',
+        '1. Không gấp - Không quan trọng'  => 'Lower',
     ];
 
     public function __construct($db) { $this->db = $db; }
