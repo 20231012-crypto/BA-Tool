@@ -115,29 +115,28 @@ function akShowDetail(name, token, methods) {
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'akDetailModal';
-        modal.className = 'modal-overlay';
+        modal.className = 'modal';
+        modal.onclick = function(e) { if (e.target === modal) modal.style.display = 'none'; };
         document.body.appendChild(modal);
     }
 
     modal.innerHTML = `
-        <div class="modal" style="max-width:650px;">
-            <div class="modal-header">
-                <h3>${esc(name)}</h3>
-                <button class="modal-close" onclick="document.getElementById('akDetailModal').classList.remove('open')">&times;</button>
-            </div>
-            <div class="modal-body" style="font-size:0.88rem;">
+        <div class="modal-content" style="max-width:650px;">
+            <span class="close" onclick="document.getElementById('akDetailModal').style.display='none'">&times;</span>
+            <h3>${esc(name)}</h3>
+            <div style="font-size:0.88rem;">
                 <div class="form-group">
                     <label>Token</label>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <input type="text" class="form-control" value="${esc(token)}" readonly id="ak-detail-token" style="font-family:monospace;font-size:0.82rem;">
-                        <button class="btn btn-outline btn-sm" onclick="akDetailCopy('ak-detail-token')">Copy</button>
+                        <button class="btn btn-outline btn-sm" onclick="akDetailCopy('ak-detail-token', this)">Copy</button>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>API URL</label>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <input type="text" class="form-control" value="${esc(apiUrl)}" readonly id="ak-detail-url" style="font-size:0.82rem;">
-                        <button class="btn btn-outline btn-sm" onclick="akDetailCopy('ak-detail-url')">Copy</button>
+                        <button class="btn btn-outline btn-sm" onclick="akDetailCopy('ak-detail-url', this)">Copy</button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -148,19 +147,18 @@ function akShowDetail(name, token, methods) {
                 <label>VD: G\u1ecdi nhanh b\u1eb1ng curl</label>
                 <div style="position:relative;">
                     <pre id="ak-detail-curl" style="background:#1e1e1e;color:#d4d4d4;padding:12px;overflow-x:auto;font-size:0.78rem;border-radius:4px;margin:6px 0;">curl -H "Authorization: Bearer ${esc(token)}" "${esc(apiUrl)}?limit=5"</pre>
-                    <button class="btn btn-outline btn-sm" style="position:absolute;top:6px;right:6px;font-size:0.7rem;" onclick="akDetailCopy('ak-detail-curl')">Copy</button>
+                    <button class="btn btn-outline btn-sm" style="position:absolute;top:6px;right:6px;font-size:0.7rem;" onclick="akDetailCopy('ak-detail-curl', this)">Copy</button>
                 </div>
             </div>
         </div>
     `;
-    modal.classList.add('open');
+    modal.style.display = 'block';
 }
 
-function akDetailCopy(elId) {
+function akDetailCopy(elId, btn) {
     const el = document.getElementById(elId);
     const text = el.value || el.textContent;
     navigator.clipboard.writeText(text).then(() => {
-        const btn = el.closest('.form-group, div').querySelector('.btn');
         if (btn) { const orig = btn.textContent; btn.textContent = '\u0110\u00e3 copy!'; setTimeout(() => btn.textContent = orig, 1500); }
     });
 }
