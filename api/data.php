@@ -287,7 +287,28 @@ if($_SERVER['REQUEST_METHOD'] === 'GET') {
         $limit  = max(1, min(100, intval($_GET['limit'] ?? 50)));
         $filters = [];
 
-        if(!empty($_GET['assign_ids']))      $filters['assign_ids']      = $_GET['assign_ids'];
+        // Non-admin: chỉ thấy công việc của mình (assign_ids hoặc follower_ids)
+        $isAdmin = ($_SESSION['username'] ?? '') === 'admin';
+        if (!$isAdmin) {
+            // Lấy employee_code + full_name của user hiện tại
+            $me = $db->prepare("SELECT employee_code, full_name FROM users WHERE id = ?");
+            $me->execute([$_SESSION['user_id']]);
+            $meRow = $me->fetch(PDO::FETCH_ASSOC);
+            $myIds = [];
+            if (!empty($meRow['employee_code'])) $myIds[] = $meRow['employee_code'];
+            if (!empty($meRow['full_name']))     $myIds[] = $meRow['full_name'];
+            $myIdStr = implode(',', $myIds);
+
+            // Nếu admin override assign_ids (chọn user khác) → không cho
+            // Luôn filter theo user hiện tại
+            if ($myIdStr) {
+                $filters['assign_ids'] = $myIdStr;
+            }
+        } else {
+            // Admin có thể chọn user khác
+            if(!empty($_GET['assign_ids'])) $filters['assign_ids'] = $_GET['assign_ids'];
+        }
+
         if(!empty($_GET['status']))          $filters['status']          = $_GET['status'];
         if(!empty($_GET['start_plan_from'])) $filters['start_plan_from'] = $_GET['start_plan_from'];
         if(!empty($_GET['start_plan_to']))   $filters['start_plan_to']   = $_GET['start_plan_to'];
@@ -298,7 +319,9 @@ if($_SERVER['REQUEST_METHOD'] === 'GET') {
         if(!empty($_GET['priority']))        $filters['priority']        = $_GET['priority'];
         if(!empty($_GET['owner_ids']))       $filters['owner_ids']       = $_GET['owner_ids'];
 
+        // Trả thêm thông tin quyền cho frontend
         $result = OneOfficeApi::getTasks($filters, $page, $limit);
+        $result['_is_admin'] = $isAdmin;
         echo json_encode($result, JSON_UNESCAPED_UNICODE);
         exit;
     }

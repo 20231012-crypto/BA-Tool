@@ -24,7 +24,6 @@ function ooLoadUsers() {
 }
 
 function ooLoad(page) {
-    ooLoadUsers();
     if (page) _ooPage = page;
     const search = (document.getElementById('oo-search').value || '').trim();
     const assign = (document.getElementById('oo-assign').value || '').trim();
@@ -59,6 +58,16 @@ function ooLoad(page) {
         const tasks = res.data || [];
         const total = res.total_item || 0;
         document.getElementById('oo-count').textContent = total + ' c\u00f4ng vi\u1ec7c';
+
+        // Admin: hiện dropdown chọn user + load danh sách
+        const assignSel = document.getElementById('oo-assign');
+        if (res._is_admin) {
+            if (assignSel) assignSel.style.display = '';
+            ooLoadUsers();
+        } else {
+            if (assignSel) assignSel.style.display = 'none';
+        }
+
         ooRenderTable(tasks);
         ooRenderPagination(total);
     }).catch(err => {
