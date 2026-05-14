@@ -1,5 +1,5 @@
 # Credentials & secrets
-# config/google-credentials.json
+config/google-credentials.json
 config/*.key
 config/*.pem
 .env
@@ -12,6 +12,7 @@ uploads/*
 # Logs
 logs/*.log
 *.log
+cron/*.log
 
 # IDE
 .vscode/
@@ -20,5 +21,3 @@ logs/*.log
 # OS
 .DS_Store
 Thumbs.db
-import_railway.php
-railway_full_import.sql

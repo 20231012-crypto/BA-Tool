@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["php83", "php83Extensions.pdo", "php83Extensions.pdo_mysql", "php83Extensions.mysqlnd", "php83Extensions.mbstring", "php83Extensions.curl", "php83Extensions.session", "php83Extensions.fileinfo", "php83Extensions.tokenizer", "php83Extensions.filter", "php83Extensions.ctype"]
-
-[phases.build]
-cmds = ["mkdir -p /app/uploads"]
-
-[start]
-cmd = "php -d display_errors=1 -d error_reporting=E_ALL -S 0.0.0.0:${PORT:-8080} -t /app"
