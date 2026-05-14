@@ -100,6 +100,22 @@ class DevSheetService {
         'pending'        => 'Chờ dev nhận',
     ];
 
+    /** Mapping task_type DB → dropdown sheet (3 giá trị) */
+    const TASK_TYPE_TO_SHEET = [
+        'Fix lỗi hệ thống'   => 'Fix lỗi',
+        'Nâng cấp hệ thống'  => 'Nâng cấp',
+        'Thay đổi dữ liệu'   => 'Khác',
+        'Lấy dữ liệu'        => 'Khác',
+    ];
+
+    /** Mapping priority DB → dropdown sheet (4 giá trị) */
+    const PRIORITY_TO_SHEET = [
+        '4. Gấp - Quan trọng'              => 'urgent',
+        '3. Không gấp - Quan trọng'        => 'higher',
+        '2. Gấp - Không quan trọng'        => 'medium',
+        '1. Không gấp - Không quan trọng'  => 'lower',
+    ];
+
     public function __construct($db) { $this->db = $db; }
 
     private function getBot() {
@@ -190,9 +206,62 @@ class DevSheetService {
             break;
         }
         $bot->duplicateTab($sourceSheetId, $target);
-        // Clear data rows (giữ header)
+        // Clear data rows (giữ header + dropdown validation)
         try { $bot->clearDataRows($target); } catch(Exception $e) { /* ignore */ }
+
+        // Copy task chưa hoàn thành từ tab tuần trước sang tab mới + xóa ở tab cũ
+        try {
+            $this->migrateIncompleteTasks($bot, $sourceTabName, $target);
+        } catch(Exception $e) { /* ignore — không block tạo tab */ }
+
         return $target;
+    }
+
+    /**
+     * Copy task chưa hoàn thành từ tab cũ sang tab mới, xóa dòng ở tab cũ.
+     * Task chưa hoàn thành = dev_status KHÔNG phải "hoàn thành" hoặc "hủy"
+     */
+    private function migrateIncompleteTasks($bot, $oldTab, $newTab) {
+        $rows = $bot->getValues("'" . $oldTab . "'!A2:T500");
+        if (empty($rows)) return;
+
+        $incompletRows = [];
+        $rowsToDelete  = []; // index (0-based từ row 2)
+
+        foreach ($rows as $i => $r) {
+            $maYc = isset($r[self::COL_MA_YC]) ? trim((string)$r[self::COL_MA_YC]) : '';
+            if ($maYc === '') continue;
+
+            $devStatus = isset($r[self::COL_DEV_STATUS]) ? mb_strtolower(trim((string)$r[self::COL_DEV_STATUS])) : '';
+            // Chưa hoàn thành = không phải "hoàn thành" và không phải "hủy"
+            if ($devStatus !== 'hoàn thành' && $devStatus !== 'hủy') {
+                $incompletRows[] = $r;
+                $rowsToDelete[]  = $i;
+            }
+        }
+
+        if (empty($incompletRows)) return;
+
+        // Ghi vào tab mới bằng updateValues (giữ dropdown)
+        $startRow = 2;
+        $range = "'" . $newTab . "'!A" . $startRow;
+        $bot->updateValues($range, $incompletRows);
+
+        // Xóa dòng ở tab cũ — xóa từ dưới lên để không lệch index
+        // Clear nội dung thay vì xóa dòng (giữ nguyên structure)
+        foreach (array_reverse($rowsToDelete) as $idx) {
+            $sheetRow = $idx + 2; // Convert to 1-based sheet row
+            $bot->updateValues("'" . $oldTab . "'!A" . $sheetRow . ":T" . $sheetRow, [array_fill(0, 20, '')]);
+        }
+
+        // Cập nhật sheet_tab + sheet_row trong DB cho các task vừa move
+        foreach ($incompletRows as $newIdx => $r) {
+            $maYc = isset($r[self::COL_MA_YC]) ? trim((string)$r[self::COL_MA_YC]) : '';
+            if ($maYc === '') continue;
+            $newRowNum = $startRow + $newIdx;
+            $stmt = $this->db->prepare("UPDATE tasks SET sheet_tab = ?, sheet_row = ? WHERE ma_yc = ?");
+            $stmt->execute([$newTab, $newRowNum, $maYc]);
+        }
     }
 
     // ============================================================
@@ -447,7 +516,8 @@ class DevSheetService {
         elseif($path !== '')               $content = "[$path]";
         else                               $content = $baDesc;
 
-        $priority  = $t['priority_ba']     ?: ($t['priority_requester'] ?? '');
+        $rawPriority = $t['priority_ba'] ?: ($t['priority_requester'] ?? '');
+        $priority  = self::PRIORITY_TO_SHEET[$rawPriority] ?? $rawPriority;
         $devDay    = $opts['dev_day'] ?? '';
         $timeBaReq = $opts['time_ba_request']
             ?? ($t['ba_submission_date'] ? date('d/m/Y H:i', strtotime($t['ba_submission_date'])) : '');
@@ -458,7 +528,7 @@ class DevSheetService {
             : ($t['dev_deadline'] ? date('d/m/Y', strtotime($t['dev_deadline'])) : '');
 
         return [
-            $t['task_type']                       ?? '',   // col 0: Loại yêu cầu
+            self::TASK_TYPE_TO_SHEET[$t['task_type'] ?? ''] ?? 'Khác',  // col 0: Loại yêu cầu
             $t['ma_yc']                           ?? ('#' . $t['id']),  // col 1: Mã YC
             $content,                                       // col 2: Nội dung yêu cầu
             $t['assignee_nickname']               ?? '',   // col 3: Người yêu cầu (BA)
