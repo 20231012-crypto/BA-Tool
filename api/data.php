@@ -287,23 +287,19 @@ if($_SERVER['REQUEST_METHOD'] === 'GET') {
         $limit  = max(1, min(100, intval($_GET['limit'] ?? 50)));
         $filters = [];
 
-        // Non-admin: chỉ thấy công việc của mình (assign_ids hoặc follower_ids)
+        // Non-admin: chỉ thấy công việc của mình (dùng employee_code)
         $isAdmin = ($_SESSION['username'] ?? '') === 'admin';
         if (!$isAdmin) {
-            // Lấy employee_code + full_name của user hiện tại
-            $me = $db->prepare("SELECT employee_code, full_name FROM users WHERE id = ?");
+            $me = $db->prepare("SELECT employee_code FROM users WHERE id = ?");
             $me->execute([$_SESSION['user_id']]);
             $meRow = $me->fetch(PDO::FETCH_ASSOC);
-            $myIds = [];
-            if (!empty($meRow['employee_code'])) $myIds[] = $meRow['employee_code'];
-            if (!empty($meRow['full_name']))     $myIds[] = $meRow['full_name'];
-            $myIdStr = implode(',', $myIds);
+            $myCode = trim($meRow['employee_code'] ?? '');
 
-            // Nếu admin override assign_ids (chọn user khác) → không cho
-            // Luôn filter theo user hiện tại
-            if ($myIdStr) {
-                $filters['assign_ids'] = $myIdStr;
+            if (!$myCode) {
+                echo json_encode(['error' => true, 'message' => 'Bạn chưa có mã nhân viên 1Office. Liên hệ Lead để cập nhật trong mục Nhân sự.', 'data' => []]);
+                exit;
             }
+            $filters['assign_ids'] = $myCode;
         } else {
             // Admin có thể chọn user khác
             if(!empty($_GET['assign_ids'])) $filters['assign_ids'] = $_GET['assign_ids'];
