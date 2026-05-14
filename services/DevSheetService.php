@@ -293,8 +293,17 @@ class DevSheetService {
         $currentTab = self::weekTabName();
         if(!in_array($currentTab, $tabsToPoll)) $tabsToPoll[] = $currentTab;
 
+        // Lấy danh sách tab thật trên sheet để skip tab chưa tồn tại
+        try {
+            $existingTabs = $bot->listTabs();
+        } catch(Exception $e) {
+            $stats['errors'][] = "Không lấy được danh sách tab: " . $e->getMessage();
+            return $stats;
+        }
+
         foreach($tabsToPoll as $tabName) {
             if(!self::isWeekTab($tabName)) continue;
+            if(!isset($existingTabs[$tabName])) continue; // Tab chưa tồn tại → skip
             try {
                 $rows = $bot->getValues("'$tabName'!A1:S5000");
             } catch(Exception $e) {
