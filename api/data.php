@@ -627,6 +627,19 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                     error_log("[DevSheet] writeTaskToSheet failed for task #$id: " . $e->getMessage());
                 }
             }
+
+            // Khi task Huỷ được back lại (reopen) → ghi vào tab tuần mới nhất
+            if($result['old_status'] === 'Huỷ' && $direction === 'back') {
+                try {
+                    require_once '../services/DevSheetService.php';
+                    $dss = new DevSheetService($db);
+                    $dss->writeTaskToSheet($id);
+                    $result['sheet_synced'] = true;
+                } catch(Exception $e) {
+                    $result['sheet_synced'] = false;
+                    $result['sheet_error']  = $e->getMessage();
+                }
+            }
             webhookSyncTask($db, $id);
         }
         echo json_encode($result);
