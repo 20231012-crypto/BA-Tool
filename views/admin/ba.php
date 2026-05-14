@@ -49,6 +49,16 @@
                         <span id="task-count" style="color:var(--text-muted); font-size:0.85rem; font-weight:500;"></span>
                     </div>
 
+                    <!-- Quick filter buttons -->
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" id="quick-filters">
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="all" onclick="qfApply('all')" style="font-weight:600;">T&#7845;t c&#7843;</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="overdue" onclick="qfApply('overdue')" style="border-color:#dc3545;color:#dc3545;">Qu&#225; h&#7841;n</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="need_receive" onclick="qfApply('need_receive')" style="border-color:#ffc107;color:#856404;">C&#7847;n ti&#7871;p nh&#7853;n</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="coding" onclick="qfApply('coding')" style="border-color:#0d6efd;color:#0d6efd;">&#272;ang code</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="testing" onclick="qfApply('testing')" style="border-color:#6f42c1;color:#6f42c1;">Test</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="done" onclick="qfApply('done')" style="border-color:#198754;color:#198754;">Ho&#224;n th&#224;nh</button>
+                    </div>
+
                     <!-- ============ FILTER BAR ============ -->
                     <div class="task-filter-bar">
                         <div class="tfb-row">
@@ -440,6 +450,41 @@ function tfPopulateDropdowns() {
     });
 }
 
+// ===== QUICK FILTERS =====
+let _activeQF = 'all';
+function qfApply(qf) {
+    _activeQF = qf;
+    document.querySelectorAll('.qf-btn').forEach(b => {
+        b.style.fontWeight = b.dataset.qf === qf ? '700' : '400';
+        b.style.background = b.dataset.qf === qf ? b.style.borderColor : 'transparent';
+        b.style.color = b.dataset.qf === qf ? '#fff' : b.style.borderColor;
+    });
+    tfReset();
+}
+
+function qfMatchTask(t) {
+    if (_activeQF === 'all') return true;
+    const now = new Date();
+    switch (_activeQF) {
+        case 'overdue':
+            if (!t.expected_end_date) return false;
+            return new Date(t.expected_end_date.replace(' ','T')) < now
+                && !['Kinkin nghiệm thu','Hoàn thành','Huỷ'].includes(t.status);
+        case 'need_receive':
+            return t.status === 'Chờ tiếp nhận' || t.status === 'Todo - chờ xác nhận với Sếp';
+        case 'coding':
+            return t.status === 'Dion - đang xử lý'
+                || (t.dev_status && ['Dev đang làm','Chờ dev nhận'].includes(t.dev_status));
+        case 'testing':
+            return t.status === 'Dion - Chờ nghiệm thu'
+                || t.status === 'Chờ nghiệm thu'
+                || (t.test_status && t.test_status !== '');
+        case 'done':
+            return ['Kinkin nghiệm thu','Hoàn thành'].includes(t.status);
+    }
+    return true;
+}
+
 function tfReset() {
     document.getElementById('tf-q').value = '';
     ['tf-status','tf-priority','tf-tasktype','tf-system','tf-dev','tf-devstatus'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
@@ -456,6 +501,7 @@ function tfApplyFilters() {
     const ds = document.getElementById('tf-devstatus').value;
 
     const filtered = _TASKS_CACHE.filter(t => {
+        if(!qfMatchTask(t)) return false;
         if(st && t.status !== st) return false;
         if(pr) {
             const p = t.priority_ba || t.priority_requester;

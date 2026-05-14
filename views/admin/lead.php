@@ -57,6 +57,17 @@
                         <span id="task-count" style="color:var(--text-muted); font-size:0.85rem; font-weight:500;"></span>
                     </div>
 
+                    <!-- Quick filter buttons -->
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" id="quick-filters">
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="all" onclick="qfApply('all')" style="font-weight:600;">T&#7845;t c&#7843;</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="overdue" onclick="qfApply('overdue')" style="border-color:#dc3545;color:#dc3545;">Qu&#225; h&#7841;n</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="need_assign" onclick="qfApply('need_assign')" style="border-color:#fd7e14;color:#fd7e14;">C&#7847;n ph&#226;n c&#244;ng</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="need_receive" onclick="qfApply('need_receive')" style="border-color:#ffc107;color:#856404;">C&#7847;n ti&#7871;p nh&#7853;n</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="coding" onclick="qfApply('coding')" style="border-color:#0d6efd;color:#0d6efd;">&#272;ang code</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="testing" onclick="qfApply('testing')" style="border-color:#6f42c1;color:#6f42c1;">Test</button>
+                        <button class="btn btn-outline btn-sm qf-btn" data-qf="done" onclick="qfApply('done')" style="border-color:#198754;color:#198754;">Ho&#224;n th&#224;nh</button>
+                    </div>
+
                     <!-- ============ FILTER BAR (Google Sheets style) ============ -->
                     <div class="task-filter-bar" id="task-filter-bar">
                         <div class="tfb-row">
@@ -1325,7 +1336,46 @@ function tfGetState() {
     };
 }
 
+// ===== QUICK FILTERS =====
+let _activeQF = 'all';
+function qfApply(qf) {
+    _activeQF = qf;
+    document.querySelectorAll('.qf-btn').forEach(b => {
+        b.style.fontWeight = b.dataset.qf === qf ? '700' : '400';
+        b.style.background = b.dataset.qf === qf ? b.style.borderColor : 'transparent';
+        b.style.color = b.dataset.qf === qf ? '#fff' : b.style.borderColor;
+    });
+    // Reset all dropdown filters
+    tfReset();
+}
+
+function qfMatchTask(t) {
+    if (_activeQF === 'all') return true;
+    const now = new Date();
+    switch (_activeQF) {
+        case 'overdue':
+            if (!t.expected_end_date) return false;
+            return new Date(t.expected_end_date.replace(' ','T')) < now
+                && !['Kinkin nghiệm thu','Hoàn thành','Huỷ'].includes(t.status);
+        case 'need_assign':
+            return !t.assignee_id || t.assignee_id === null;
+        case 'need_receive':
+            return t.status === 'Chờ tiếp nhận';
+        case 'coding':
+            return t.status === 'Dion - đang xử lý'
+                || (t.dev_status && ['Dev đang làm','Chờ dev nhận'].includes(t.dev_status));
+        case 'testing':
+            return t.status === 'Dion - Chờ nghiệm thu'
+                || t.status === 'Chờ nghiệm thu'
+                || (t.test_status && t.test_status !== '');
+        case 'done':
+            return ['Kinkin nghiệm thu','Hoàn thành'].includes(t.status);
+    }
+    return true;
+}
+
 function tfMatch(t, f) {
+    if (!qfMatchTask(t)) return false;
     if(f.status     && t.status            !== f.status)     return false;
     if(f.unit       && t.implementing_unit !== f.unit)       return false;
     if(f.priority) {
