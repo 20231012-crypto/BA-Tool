@@ -211,34 +211,34 @@ class DevSheetService {
         $bot = $this->getBot();
         $tabName = $this->ensureCurrentWeekTab();
 
-        // Kiểm tra mã YC đã tồn tại trên sheet chưa
+        // Đọc cột B (Mã YC) để kiểm tra trùng + tìm dòng trống đầu tiên
         $maYc = $task['ma_yc'] ?? ('#' . $task['id']);
-        $existingRows = $bot->getValues("'" . $tabName . "'!B2:B5000");
-        foreach ($existingRows as $r) {
-            if (isset($r[0]) && trim($r[0]) === $maYc) {
+        $colB = $bot->getValues("'" . $tabName . "'!B2:B500");
+        $nextRow = 2; // Dòng đầu tiên sau header
+        foreach ($colB as $i => $r) {
+            $val = isset($r[0]) ? trim($r[0]) : '';
+            if ($val === $maYc) {
                 throw new Exception("Mã YC $maYc đã tồn tại trên sheet tab '$tabName'");
             }
+            if ($val !== '') $nextRow = $i + 3; // Dòng tiếp theo sau dòng cuối có data (1-based, +2 vì bắt đầu từ row 2)
         }
 
-        // Build row — chỉ ghi thông tin cơ bản + ngày dự kiến, KHÔNG ghi các cột ngày khác
+        // Build row — chỉ ghi thông tin cơ bản + ngày dự kiến
         $row = $this->buildRow($task, [
             'force_dev_status' => 'todo',
             'time_ba_request'  => date('d/m/Y H:i'),
             'dev_day'          => date('d/m/Y H:i'),
         ]);
 
-        // Append
-        $resp = $bot->appendValues("'" . $tabName . "'!A1", [$row]);
-        // Parse updatedRange "Tổng quan!A123:S123" → row 123
-        $updRange = $resp['updates']['updatedRange'] ?? '';
-        $rowNum = null;
-        if(preg_match('#![A-Z]+(\d+):#', $updRange, $m)) $rowNum = (int)$m[1];
+        // Dùng updateValues thay vì appendValues để GIỮ NGUYÊN dropdown/data validation
+        // Ghi vào dòng trống đầu tiên (đã có validation từ template)
+        $range = "'" . $tabName . "'!A" . $nextRow;
+        $bot->updateValues($range, [$row]);
+        $rowNum = $nextRow;
 
-        // Cache lại vị trí trong DB để poll/update sau không cần search
-        if($rowNum) {
-            $stmt = $this->db->prepare("UPDATE tasks SET sheet_tab = ?, sheet_row = ? WHERE id = ?");
-            $stmt->execute([$tabName, $rowNum, $taskId]);
-        }
+        // Cache vị trí trong DB để poll/update sau
+        $stmt = $this->db->prepare("UPDATE tasks SET sheet_tab = ?, sheet_row = ? WHERE id = ?");
+        $stmt->execute([$tabName, $rowNum, $taskId]);
         return ['tab' => $tabName, 'row' => $rowNum];
     }
 
