@@ -204,17 +204,27 @@ class DevSheetService {
      * Trả về [tab => string, row => int (1-based, dòng vừa append)].
      */
     public function writeTaskToSheet($taskId) {
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
         $task = $this->loadTaskWithJoins($taskId);
         if(!$task) throw new Exception("Không tìm thấy task #$taskId");
 
         $bot = $this->getBot();
         $tabName = $this->ensureCurrentWeekTab();
 
-        // Build row 19 cột — values cố định cho task vừa giao
+        // Kiểm tra mã YC đã tồn tại trên sheet chưa
+        $maYc = $task['ma_yc'] ?? ('#' . $task['id']);
+        $existingRows = $bot->getValues("'" . $tabName . "'!B2:B5000");
+        foreach ($existingRows as $r) {
+            if (isset($r[0]) && trim($r[0]) === $maYc) {
+                throw new Exception("Mã YC $maYc đã tồn tại trên sheet tab '$tabName'");
+            }
+        }
+
+        // Build row — chỉ ghi thông tin cơ bản + ngày dự kiến, KHÔNG ghi các cột ngày khác
         $row = $this->buildRow($task, [
-            'force_dev_status' => 'todo',                      // task vừa giao → todo
+            'force_dev_status' => 'todo',
             'time_ba_request'  => date('d/m/Y H:i'),
-            'dev_day'          => date('d/m/Y H:i'),           // ngày dev nhận yêu cầu = hôm nay
+            'dev_day'          => date('d/m/Y H:i'),
         ]);
 
         // Append
@@ -442,35 +452,32 @@ class DevSheetService {
         $timeBaReq = $opts['time_ba_request']
             ?? ($t['ba_submission_date'] ? date('d/m/Y H:i', strtotime($t['ba_submission_date'])) : '');
 
+        // Chỉ ghi: thông tin task + ngày dự kiến hoàn thành (col 7)
+        // Các cột ngày khác (col 5,6,14,15,16,17) để trống — Dev tự điền trên sheet, bot poll về DB
+        $plannedEnd = $t['dev_planned_end'] ? date('d/m/Y', strtotime($t['dev_planned_end']))
+            : ($t['dev_deadline'] ? date('d/m/Y', strtotime($t['dev_deadline'])) : '');
+
         return [
-            $t['task_type']                       ?? '',
-            $t['ma_yc']                           ?? ('#' . $t['id']),
-            $content,
-            $t['assignee_nickname']               ?? '',
-            $t['dev_nickname']                    ?? '',
-            $t['dev_start_at'] ? date('d/m/Y', strtotime($t['dev_start_at'])) : '',
-            $t['dev_end_at']   ? date('d/m/Y', strtotime($t['dev_end_at']))   : '',
-            $t['dev_planned_end'] ? date('d/m/Y', strtotime($t['dev_planned_end']))
-                : ($t['dev_deadline'] ? date('d/m/Y', strtotime($t['dev_deadline'])) : ''),
-            $devStatus,
-            $priority,
-            $t['tester_nickname']                 ?? '',
-            $t['test_date'] ? date('d/m/Y', strtotime($t['test_date'])) : '',
-            $t['test_status']                     ?? '',
-            $t['dev_notes']                       ?? '',
-            $t['dev_start_at'] ? date('d/m/Y H:i', strtotime($t['dev_start_at'])) : '',
-            $t['dev_end_at']   ? date('d/m/Y H:i', strtotime($t['dev_end_at']))   : '',
-            $timeBaReq,
-            $t['acceptance_date'] ? date('d/m/Y', strtotime($t['acceptance_date'])) : '',
-            $devDay,
-            // col 19: BA ước tính (mm/dd/yyyy - mm/dd/yyyy)
-            (function() use ($t) {
-                $s = $t['ba_start_date'] ?? '';
-                $e = $t['ba_end_date']   ?? '';
-                if(!$s && !$e) return '';
-                $fmt = function($d) { return $d ? date('d/m/Y', strtotime($d)) : ''; };
-                return $fmt($s) . ($s && $e ? ' - ' : '') . $fmt($e);
-            })(),
+            $t['task_type']                       ?? '',   // col 0: Loại yêu cầu
+            $t['ma_yc']                           ?? ('#' . $t['id']),  // col 1: Mã YC
+            $content,                                       // col 2: Nội dung yêu cầu
+            $t['assignee_nickname']               ?? '',   // col 3: Người yêu cầu (BA)
+            $t['dev_nickname']                    ?? '',   // col 4: Người thực hiện (Dev)
+            '',                                             // col 5: Ngày thực hiện code — để trống
+            '',                                             // col 6: Ngày hoàn thành code — để trống
+            $plannedEnd,                                    // col 7: Ngày dự kiến hoàn thành — GHI
+            $devStatus,                                     // col 8: Trạng thái task của dev
+            $priority,                                      // col 9: Mức độ
+            '',                                             // col 10: Người thực hiện test — để trống
+            '',                                             // col 11: Ngày test — để trống
+            '',                                             // col 12: Trạng thái test — để trống
+            '',                                             // col 13: Ghi chú — để trống
+            '',                                             // col 14: Thời gian bắt đầu code — để trống
+            '',                                             // col 15: Thời gian kết thúc code — để trống
+            $timeBaReq,                                     // col 16: Thời gian BA yêu cầu — GHI
+            '',                                             // col 17: Thời gian nghiệm thu — để trống
+            $devDay,                                        // col 18: Ngày Dev thực hiện YC
+            '',                                             // col 19: BA ước tính — để trống
         ];
     }
 
