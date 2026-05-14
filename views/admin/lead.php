@@ -513,36 +513,36 @@
             <section id="section-apikeys" class="page-section" style="display:none;">
                 <div class="card">
                     <div class="section-title">
-                        <span>API Management</span>
-                        <button class="btn btn-primary btn-sm" onclick="akShowCreate()">+ Tao API Key</button>
+                        <span>Qu&#7843;n l&#253; API</span>
+                        <button class="btn btn-primary btn-sm" onclick="akShowCreate()">+ T&#7841;o API Key</button>
                     </div>
 
                     <!-- Create form (hidden by default) -->
                     <div id="ak-create-form" style="display:none;margin-bottom:16px;padding:16px;background:#f0f4ff;border:1px solid #cfe2ff;">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                             <div class="form-group" style="margin:0;">
-                                <label>Ten API Key</label>
-                                <input type="text" id="ak-name" class="form-control" placeholder="VD: Slack Integration">
+                                <label>T&#234;n API Key</label>
+                                <input type="text" id="ak-name" class="form-control" placeholder="VD: Slack Integration, Chatbot...">
                             </div>
                             <div class="form-group" style="margin:0;">
-                                <label>Phuong thuc cho phep</label>
+                                <label>Ph&#432;&#417;ng th&#7913;c cho ph&#233;p</label>
                                 <select id="ak-methods" class="form-control">
-                                    <option value="GET">GET (chi doc)</option>
-                                    <option value="GET,POST">GET + POST (doc + tao)</option>
-                                    <option value="GET,POST,PUT">GET + POST + PUT (doc + tao + sua)</option>
-                                    <option value="ALL" selected>ALL (toan quyen)</option>
+                                    <option value="GET">GET (ch&#7881; &#273;&#7885;c)</option>
+                                    <option value="GET,POST">GET + POST (&#273;&#7885;c + t&#7841;o)</option>
+                                    <option value="GET,POST,PUT">GET + POST + PUT (&#273;&#7885;c + t&#7841;o + s&#7917;a)</option>
+                                    <option value="ALL" selected>ALL (to&#224;n quy&#7873;n)</option>
                                 </select>
                             </div>
                         </div>
                         <div style="margin-top:10px;text-align:right;">
-                            <button class="btn btn-outline btn-sm" onclick="document.getElementById('ak-create-form').style.display='none'">Huy</button>
-                            <button class="btn btn-primary btn-sm" onclick="akCreate()">Tao Key</button>
+                            <button class="btn btn-outline btn-sm" onclick="document.getElementById('ak-create-form').style.display='none'">H&#7911;y</button>
+                            <button class="btn btn-primary btn-sm" onclick="akCreate()">T&#7841;o Key</button>
                         </div>
                     </div>
 
                     <!-- Token display (after create) -->
                     <div id="ak-token-display" style="display:none;margin-bottom:16px;padding:16px;background:#f0fff4;border:1px solid #a3cfbb;">
-                        <strong style="color:#198754;">Token da tao thanh cong! Copy ngay, se khong hien lai:</strong>
+                        <strong style="color:#198754;">Token &#273;&#227; t&#7841;o th&#224;nh c&#244;ng! Copy ngay — s&#7869; kh&#244;ng hi&#7875;n l&#7841;i:</strong>
                         <div style="margin-top:8px;padding:10px;background:#fff;border:1px solid #ddd;font-family:monospace;word-break:break-all;font-size:0.9rem;" id="ak-new-token"></div>
                         <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="akCopyToken()">Copy Token</button>
                     </div>
@@ -551,24 +551,24 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Ten</th>
+                                <th>T&#234;n</th>
                                 <th>Token</th>
-                                <th>Phuong thuc</th>
-                                <th>Trang thai</th>
-                                <th>Luot goi</th>
-                                <th>Lan cuoi</th>
-                                <th>Hanh dong</th>
+                                <th>Ph&#432;&#417;ng th&#7913;c</th>
+                                <th>Tr&#7841;ng th&#225;i</th>
+                                <th>L&#432;&#7907;t g&#7885;i</th>
+                                <th>L&#7847;n cu&#7889;i</th>
+                                <th>H&#224;nh &#273;&#7897;ng</th>
                             </tr>
                         </thead>
                         <tbody id="ak-tbody">
-                            <tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Dang tai...</td></tr>
+                            <tr><td colspan="7" style="text-align:center;color:var(--text-muted);">&#272;ang t&#7843;i...</td></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- API Documentation -->
                 <div class="card" style="margin-top:16px;">
-                    <div class="section-title"><span>Tai lieu API</span></div>
+                    <div class="section-title"><span>T&#224;i li&#7879;u API</span></div>
                     <div style="font-size:0.88rem;line-height:1.7;">
                         <p><strong>Base URL:</strong> <code id="ak-base-url"></code></p>
                         <p><strong>Auth:</strong> Header <code>Authorization: Bearer &lt;token&gt;</code></p>

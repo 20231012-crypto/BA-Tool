@@ -10,7 +10,7 @@ function akLoad() {
     fetch(API + '?action=get_api_keys').then(r => r.json()).then(keys => {
         const tbody = document.getElementById('ak-tbody');
         if (!keys.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px;">Chua co API key nao. Bam "+ Tao API Key" de bat dau.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px;">Ch\u01b0a c\u00f3 API key n\u00e0o. B\u1ea5m "+ T\u1ea1o API Key" \u0111\u1ec3 b\u1eaft \u0111\u1ea7u.</td></tr>';
             return;
         }
         tbody.innerHTML = keys.map(k => `
