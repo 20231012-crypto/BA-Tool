@@ -161,9 +161,14 @@ class GoogleSheetsBot {
         return true;
     }
 
+    /** Encode range cho Google Sheets API — giữ nguyên dấu ' và ! */
+    private function encodeRange($range) {
+        return str_replace(['%27','%21'], ["'","!"], $this->encodeRange($range));
+    }
+
     public function clearRange($range) {
         return $this->api('POST',
-            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . rawurlencode($range) . ":clear", new stdClass()
+            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . $this->encodeRange($range) . ":clear", new stdClass()
         );
     }
 
@@ -173,7 +178,7 @@ class GoogleSheetsBot {
      */
     public function getValues($range) {
         $res = $this->api('GET',
-            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . rawurlencode($range)
+            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . $this->encodeRange($range)
         );
         return $res['values'] ?? [];
     }
@@ -183,7 +188,7 @@ class GoogleSheetsBot {
      */
     public function updateValues($range, array $values) {
         return $this->api('PUT',
-            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . rawurlencode($range) . "?valueInputOption=RAW",
+            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . $this->encodeRange($range) . "?valueInputOption=RAW",
             ['range' => $range, 'majorDimension' => 'ROWS', 'values' => $values]
         );
     }
@@ -194,7 +199,7 @@ class GoogleSheetsBot {
      */
     public function appendValues($range, array $values, $valueInputOption = 'USER_ENTERED') {
         return $this->api('POST',
-            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . rawurlencode($range)
+            "https://sheets.googleapis.com/v4/spreadsheets/{$this->spreadsheetId}/values/" . $this->encodeRange($range)
             . ":append?valueInputOption=" . urlencode($valueInputOption) . "&insertDataOption=INSERT_ROWS",
             ['range' => $range, 'majorDimension' => 'ROWS', 'values' => $values]
         );
